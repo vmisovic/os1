@@ -3,6 +3,8 @@
 
 #include "../lib/hw.h"
 
+void terminate();
+
 uint64 read_sstatus();
 uint64 read_sip();
 uint64 read_sie();
@@ -22,6 +24,12 @@ static const uint64 SEIE = (1ULL << 9);
 static const uint64 SSIP = (1ULL << 1);
 static const uint64 SEIP = (1ULL << 9);
 static const uint64 SPP  = (1ULL << 8);
+
+inline void terminate() {
+	const uint32 stopCode = 0x5555;
+	volatile uint32 *stopAddr = (uint32*)0x100000;
+	*stopAddr = stopCode;
+}
 
 inline uint64 read_sstatus() {
 	uint64 sstatus = 0;

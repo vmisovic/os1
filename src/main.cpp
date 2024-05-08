@@ -1,6 +1,6 @@
 #include "../lib/hw.h"
 #include "../h/console.hpp"
-//#include "../h/memory.hpp"
+#include "../h/mem.hpp"
 #include "../h/print.hpp"
 #include "../h/sys_regs.hpp"
 //#include <stddef.h>
@@ -33,17 +33,19 @@ void newTest(void *args) {
 }
 
 int main() {
+	printString("memInit()");
+	memInit();
 	printString("start: new thread\n");
 	int *arg = new int;
 	*arg = 9;
 	Thread *userT = new Thread(newTest, arg, Thread::Mode::USER);
-	Thread *kernT = new Thread(kurac, nullptr, Thread::Mode::SYSTEM);
+	//Thread *kernT = new Thread(kurac, nullptr, Thread::Mode::SYSTEM);
 	printString("end: new thread\n");
 
 	interruptInit();
 
 	printString("while loop\n");
-	while (!userT->isFinished() || !kernT->isFinished()) {
+	while (!userT->isFinished()){//} || !kernT->isFinished()) {
 		printString("main dosao na red, al ceka.\n");
 		//read_sip();
 		Thread::yield();
@@ -52,7 +54,8 @@ int main() {
 	printString("delete threads\n");
 	delete arg;
 	delete userT;
-	delete kernT;
+	//delete kernT;
 	printString("KRAJ!!!\n");
+	terminate();
 	return 0;
 }

@@ -2,7 +2,7 @@
 #include "../h/sys_regs.hpp"
 #include "../h/ecall_codes.h"
 #include "../h/thread.hpp"
-#include "../h/memory.hpp"
+#include "../h/mem.hpp"
 #include "../h/print.hpp"
 
 Thread::Mode currentMode = Thread::Mode::SYSTEM;
@@ -60,9 +60,9 @@ void interruptHandler(Registers *saved) {
 			userEcallHandler(saved);
 			break;
 		case 9:	// ecall iz sistemskog režima
-			printString("yield\n");
+			printString("ecall sistemski rezim\n");
 			write_sepc(read_sepc() + 4);
-			Thread::dispatch();
+			systemEcallHandler(saved);
 			break;
 		}
 	}
@@ -75,7 +75,7 @@ void userEcallHandler(Registers *saved) {
 	case MEM_ALLOC:
 		printString("ecall alloc\n");
 		printString("HOCU DA VIDIM OVO SAAD!!!1\n");
-		saved->a0 = (uint64)__mem_alloc((size_t)saved->a1);
+		saved->a0 = (uint64)memAlloc((size_t)saved->a1);
 		break;
 	case MEM_FREE:
 		printString("kurac free\n");
@@ -87,7 +87,7 @@ void userEcallHandler(Registers *saved) {
 			print_hex(*((uint64*)reg->a1 + i));
 			__putc('\n');
 		}*/
-		saved->a0 = __mem_free((void*)saved->a1);
+		saved->a0 = memFree((void*)saved->a1);
 		// ako nije nula onda je greska, nista nije freeovano
 		break;
 	case THREAD_CREATE:
@@ -111,6 +111,21 @@ void userEcallHandler(Registers *saved) {
 		break;
 	case PUTC:
 		__putc((char)saved->a1);
+		break;
+	}
+}
+
+void systemEcallHandler(Registers *saved) {
+	switch (saved->a0) {
+	case THREAD_EXIT:
+		printString("thread exit\n");
+		Thread::running->finished = true;
+		Thread::dispatch();
+		break;
+	case THREAD_DISPATCH:
+		printString("thread dispatch\n");
+		Thread::dispatch();
+		printString("\n");
 		break;
 	}
 }

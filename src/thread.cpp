@@ -1,7 +1,8 @@
 #include "../h/thread.hpp"
-#include "../h/memory.hpp"
+#include "../h/mem.hpp"
 #include "../h/scheduler.hpp"
 #include "../h/sys_regs.hpp"
+#include "../h/ecall_codes.h"
 
 // static allocation for initial thread, it will be automaticly dealocated
 Thread Thread::initialThread;
@@ -10,7 +11,7 @@ Thread *Thread::running = &initialThread;
 Thread::Thread(void (*run_routine)(void*), void *args, Mode mode) :
 	run_routine(run_routine),
 	args(args),
-	stack((char*)__mem_alloc(DEFAULT_STACK_SIZE)),
+	stack((char*)memAlloc(DEFAULT_STACK_SIZE)),
 	context({
 		(uint64)start_wrapper,
 		(uint64)(stack + DEFAULT_STACK_SIZE)
@@ -43,18 +44,27 @@ Thread::Thread() :
 }
 
 Thread::~Thread() {
-	__mem_free(stack);
+	memFree(stack);
 }
 
 void Thread::compleated() {
-	running->finished = true;
-	yield();
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"li a0, ECODE;"
+		"ecall;"
+		:
+		: [ecode]"i"(THREAD_EXIT)
+	);
 }
 
 void Thread::yield() {
-	// only interrupt saves process registers
-	// TODO set aX registers
-	__asm__ __volatile__ ("ecall");
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"li a0, ECODE;"
+		"ecall;"
+		:
+		: [ecode]"i"(THREAD_DISPATCH)
+	);
 }
 
 void Thread::start_wrapper() {

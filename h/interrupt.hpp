@@ -9,6 +9,7 @@ extern void interruptWrapper();
 void interruptHandler(Registers *saved);
 void interruptInit();
 void userEcallHandler(Registers *saved);
+void systemEcallHandler(Registers *saved);
 
 struct Registers {
 //x0 zero Hard-wired zero —

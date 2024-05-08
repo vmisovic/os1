@@ -2,7 +2,6 @@
 #define THREAD_CPP
 
 #include "../lib/hw.h"
-#include "../h/memory.hpp"
 
 struct Registers;
 
@@ -21,8 +20,6 @@ public:
 
 	bool isFinished() { return finished; }
 
-	void *operator new(size_t size) { return __mem_alloc(size); }
-	void operator delete(void *ptr) { __mem_free(ptr); }
 private:
 	struct Context {
 		uint64 ra;
@@ -47,6 +44,7 @@ private:
 
 	friend void interruptHandler(Registers *saved);
 	friend void userEcallHandler(Registers *saved);
+	friend void systemEcallHandler(Registers *saved);
 };
 
 #endif

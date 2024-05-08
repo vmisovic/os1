@@ -1,16 +1,34 @@
 #include "../h/mem.hpp"
+#include "../h/print.hpp"
 
-// align last block to the MEM_BLOCK_SIZE to the end of the heap
-static const uint8 *BLOCKS_END = (uint8*)(((size_t)HEAP_END_ADDR / MEM_BLOCK_SIZE) * MEM_BLOCK_SIZE);
-// calculate number of blocks
-static const blk_t NUM_OF_BLOCKS = (blk_t)(BLOCKS_END - (uint8*)HEAP_START_ADDR) / (MEM_BLOCK_SIZE + sizeof(blk_t));
-static blk_t free_blocks_count = NUM_OF_BLOCKS;
-// calculate address of the first block
-static const uint8 *BLOCKS_START = BLOCKS_END - NUM_OF_BLOCKS * MEM_BLOCK_SIZE;
+static uint8 *BLOCKS_START;
+static uint8 *BLOCKS_END;
+
+static blk_t NUM_OF_BLOCKS;
+static blk_t free_blocks_count;
 
 static blk_t *blockDesc; 
 
 void memInit() {
+	// align last block to the MEM_BLOCK_SIZE to the end of the heap
+	BLOCKS_END = (uint8*)(((size_t)HEAP_END_ADDR / MEM_BLOCK_SIZE) * MEM_BLOCK_SIZE);
+	// calculate number of blocks
+	NUM_OF_BLOCKS = (blk_t)(BLOCKS_END - (uint8*)HEAP_START_ADDR) / (MEM_BLOCK_SIZE + sizeof(blk_t));
+	// calculate address of the first block
+	BLOCKS_START = BLOCKS_END - NUM_OF_BLOCKS * MEM_BLOCK_SIZE;
+	free_blocks_count = NUM_OF_BLOCKS;
+
+	printString("\nHEAP_START_ADDR: \t");
+	printHex((uint64)HEAP_START_ADDR);
+	printString("\nHEAP_END_ADDR: \t");
+	printHex((uint64)HEAP_END_ADDR);
+	printString("\nBLOCKS_START: \t");
+	printHex((uint64)BLOCKS_START);
+	printString("\nBLOCKS_END: \t");
+	printHex((uint64)BLOCKS_END);
+	printString("\nNUM_OF_BLOCKS: \t");
+	printHex((uint64)NUM_OF_BLOCKS);
+
 	blockDesc = (blk_t*)HEAP_START_ADDR;
 	blockDesc[0] = NUM_OF_BLOCKS;
 	for (blk_t i = 1; i < NUM_OF_BLOCKS; i++)
@@ -61,4 +79,13 @@ int blkFree(void *ptr) {
 		blockDesc[index] = 0;
 	}
 	return 0;
+}
+
+void *memAlloc(size_t bytes) {
+	size_t blocks = (bytes + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE;
+	return blkAlloc(blocks);
+}
+
+int memFree(void *ptr) {
+	return blkFree(ptr);
 }
