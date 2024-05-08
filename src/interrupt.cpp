@@ -95,10 +95,20 @@ void userEcallHandler(Registers *saved) {
 		// a2 thread_routine
 		// a3 arg*
 		// a4 stack*
+		*(Thread**)saved->a1 = new Thread(
+			(void (*)(void*))saved->a2,
+			(void*)saved->a3,
+			(void*)saved->a4,
+			Thread::Mode::USER
+		);
+		saved->a0 = (*(Thread**)saved->a1 != nullptr)? 0 : -1;
+		printHex((uint64)*(Thread**)saved->a1);
 		break;
 	case THREAD_EXIT:
 		printString("thread exit\n");
 		Thread::running->finished = true;
+		delete Thread::running;
+		Thread::running = nullptr;
 		Thread::dispatch();
 		break;
 	case THREAD_DISPATCH:

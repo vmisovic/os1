@@ -9,6 +9,7 @@ static blk_t free_blocks_count;
 
 static blk_t *blockDesc;
 
+
 void memInit() {
 	// align last block to the MEM_BLOCK_SIZE to the end of the heap
 	BLOCKS_END = (uint8*)(((size_t)HEAP_END_ADDR / MEM_BLOCK_SIZE) * MEM_BLOCK_SIZE);
@@ -41,7 +42,19 @@ blk_t next(blk_t index) {
 	return index + increment;
 }
 
+void zaglavlje() {
+	printString("\nZaglavlje:\n");
+	printInt(blockDesc[0]);
+	for (blk_t i = next(0); i < NUM_OF_BLOCKS; i = next(i)) {
+		printString(", ");
+		printInt(blockDesc[i]);
+	}
+	printString(".\n");
+}
+
 void *blkAlloc(size_t blocks) {
+	zaglavlje();
+	printString("ALOKACIJA");
 	if ((size_t)free_blocks_count < blocks)
 		return nullptr;
 	blk_t count = (blk_t)blocks;
@@ -58,6 +71,8 @@ void *blkAlloc(size_t blocks) {
 }
 
 int blkFree(void *ptr) {
+	zaglavlje();
+	printString("FREE");
 	if ((uint8*)ptr < BLOCKS_START || (uint8*)ptr >= BLOCKS_END || (size_t)ptr % MEM_BLOCK_SIZE != 0)
 		return -1;
 	blk_t index = (blk_t)((uint8*)ptr - BLOCKS_START) / MEM_BLOCK_SIZE;
@@ -66,7 +81,7 @@ int blkFree(void *ptr) {
 	blockDesc[index] *= -1;
 	// merge if next segemnt is also free
 	blk_t nextIndex = next(index); 
-	if (blockDesc[nextIndex] > 0) {
+	if (nextIndex < NUM_OF_BLOCKS && blockDesc[nextIndex] > 0) {
 		blockDesc[index] += blockDesc[nextIndex];
 		blockDesc[nextIndex] = 0;
 	}

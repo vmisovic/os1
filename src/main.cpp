@@ -38,8 +38,9 @@ int main() {
 	printString("start: new thread\n");
 	int *arg = new int;
 	*arg = 9;
-	Thread *userT = new Thread(newTest, arg, Thread::Mode::USER);
-	//Thread *kernT = new Thread(kurac, nullptr, Thread::Mode::SYSTEM);
+	//void *sp = (uint8*)memAlloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
+	Thread *userT = Thread::create(userMain, arg, nullptr, Thread::Mode::USER);
+	//Thread *kernT = new Thread(kurac, nullptr, nullptr, Thread::Mode::SYSTEM);
 	printString("end: new thread\n");
 
 	interruptInit();
@@ -51,9 +52,9 @@ int main() {
 		Thread::yield();
 	}
 	
-	printString("delete threads\n");
+	printString("delete int");
 	delete arg;
-	delete userT;
+	printString("delete threads\n");
 	//delete kernT;
 	printString("KRAJ!!!\n");
 	terminate();

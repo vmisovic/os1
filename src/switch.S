@@ -8,6 +8,9 @@ _ZN6Thread13switchContextEPNS_7ContextES1_:
 	// a0 - oldC
 	// a1 - newC
 	/* Context: { ra, sp, sepc, sstatus } */
+
+	// if oldC (a0) is not null
+	beqz	a0, oldIsNull
 	// save ra and sp of old context 
 	sd	ra, 0 * 8(a0)
 	sd	sp, 1 * 8(a0)
@@ -18,6 +21,7 @@ _ZN6Thread13switchContextEPNS_7ContextES1_:
 	sd	ra, 2 * 8(a0)
 	sd	sp, 3 * 8(a0)
 
+oldIsNull:
 	// read saved sepc and sstatus of new context
 	ld	sp, 3 * 8(a1)
 	ld	ra, 2 * 8(a1)

@@ -12,9 +12,12 @@ public:
 	static Thread *running;
 	time_t timerCounter = 0;
 
-	Thread(void (*run_routine)(void*), void *args, Mode m);
-	~Thread();
-
+	static Thread* create(
+		void (*run_routine)(void*),
+		void *args,
+		void* sp,
+		Mode m
+	);
 	static void compleated();
 	static void yield();
 
@@ -37,6 +40,8 @@ private:
 	Mode mode;
 
 	Thread();
+	Thread(void (*run_routine)(void*), void *args, void* sp, Mode m);
+	~Thread();
 	static void start_wrapper();
 	static void set_priviledge(Mode m);
 	static void switchContext(Context *oldC, Context *newC);

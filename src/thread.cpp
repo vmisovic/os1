@@ -8,26 +8,34 @@
 Thread Thread::initialThread;
 Thread *Thread::running = &initialThread;
 
-Thread::Thread(void (*run_routine)(void*), void *args, Mode mode) :
+Thread* Thread::create(void (*run_routine)(void*), void *args, void* sp, Mode m) {
+	return new Thread(run_routine, args, sp, m);
+}
+
+Thread::Thread(void (*run_routine)(void*), void *args, void* sp, Mode mode) :
 	run_routine(run_routine),
 	args(args),
-	stack((char*)memAlloc(DEFAULT_STACK_SIZE)),
+	stack((sp == nullptr)? (char*)memAlloc(DEFAULT_STACK_SIZE) : nullptr),
 	context({
 		(uint64)start_wrapper,
-		(uint64)(stack + DEFAULT_STACK_SIZE)
+		(uint64)((sp == 0)? (stack + DEFAULT_STACK_SIZE) : sp)
 	}),
 	mode(mode)
 {
-	printString("START_WRAPPER ADDR: ");
+	printString("\nSTART_WRAPPER ADDR: ");
 	printHex((uint64)start_wrapper);
-	printString("\n");
-
-	printString("CONTEXT ra: ");
+	printString("\nSTACK");
+	printHex((uint64)stack);
+	printString("\nCONTEXT ra: ");
 	printHex((uint64)context.ra);
+	printString("\nCONTEXT sp: ");
+	printHex((uint64)context.sp);
 	printString("\n");
 
-	for (size_t i = 0; i < DEFAULT_STACK_SIZE / sizeof(uint64); i++)
-		*((uint64*)stack + i) = (uint64)args;
+	if (stack) {
+		for (size_t i = 0; i < DEFAULT_STACK_SIZE / sizeof(uint64); i++)
+			*((uint64*)stack + i) = (uint64)args;
+	}
 	Scheduler::put(this);
 }
 
@@ -44,7 +52,10 @@ Thread::Thread() :
 }
 
 Thread::~Thread() {
-	memFree(stack);
+	if (stack) {
+		printString("Brisem stek koji sam alocirao");
+		memFree(stack);
+	}
 }
 
 void Thread::compleated() {
@@ -111,10 +122,11 @@ void Thread::set_priviledge(Mode m) {
 void Thread::dispatch() {
 	Thread *oldRunning = running;
 
-	if (!oldRunning->finished)
+	if (oldRunning && !oldRunning->finished)
 		Scheduler::put(oldRunning);
 	running = Scheduler::get();
 	running->timerCounter = 0;
 
-	switchContext(&oldRunning->context, &running->context);
+	Context *oldContext = (oldRunning)? &oldRunning->context : nullptr;
+	switchContext(oldContext, &running->context);
 }

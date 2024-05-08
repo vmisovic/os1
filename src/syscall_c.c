@@ -34,6 +34,28 @@ int mem_free(void *ptr) {
 	return ret;
 }
 
+int thread_create(thread_t* handle, void(*start_routine)(void*), void* arg) {
+	void *stack_space = 0;//(uint8*)mem_alloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE; // leaks memory!!?
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a4, %[stack_space];"
+		"mv a3, %[arg];"
+		"mv a2, %[start_routine];"
+		"mv a1, %[handle];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [handle]"r"(handle),
+		  [start_routine]"r"(start_routine),
+		  [arg]"r"(arg),
+		  [stack_space]"r"(stack_space),
+		  [ecode]"i"(THREAD_CREATE)
+	);
+	return ret;
+}
+
 int thread_exit() {
 	int ret = 0;
 	__asm__ __volatile__ (
