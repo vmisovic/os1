@@ -1,5 +1,5 @@
 #include "../h/thread.hpp"
-#include "../h/mem.hpp"
+#include "../h/memory.hpp"
 #include "../h/scheduler.hpp"
 #include "../h/sys_regs.hpp"
 #include "../h/ecall_codes.h"

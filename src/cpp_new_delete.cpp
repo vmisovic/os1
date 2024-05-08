@@ -1,4 +1,4 @@
-#include "../h/mem.hpp"
+#include "../h/memory.hpp"
 #include "../h/syscall_c.h"
 
 // new int[len] requires some symbols

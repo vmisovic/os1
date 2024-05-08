@@ -1,4 +1,4 @@
-#include "../h/mem.hpp"
+#include "../h/memory.hpp"
 #include "../h/print.hpp"
 
 static uint8 *BLOCKS_START;

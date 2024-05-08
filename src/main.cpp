@@ -1,6 +1,6 @@
 #include "../lib/hw.h"
 #include "../h/console.hpp"
-#include "../h/mem.hpp"
+#include "../h/memory.hpp"
 #include "../h/print.hpp"
 #include "../h/sys_regs.hpp"
 //#include <stddef.h>

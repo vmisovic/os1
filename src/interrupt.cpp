@@ -2,7 +2,7 @@
 #include "../h/sys_regs.hpp"
 #include "../h/ecall_codes.h"
 #include "../h/thread.hpp"
-#include "../h/mem.hpp"
+#include "../h/memory.hpp"
 #include "../h/print.hpp"
 
 Thread::Mode currentMode = Thread::Mode::SYSTEM;
