@@ -6,15 +6,16 @@ extern "C" {
 #endif
 
 void* mem_alloc(size_t size) {
+	size_t blocks = (size + MEM_BLOCK_SIZE - 1) % MEM_BLOCK_SIZE;
 	void *mem = 0;
 	__asm__ __volatile__ (
 		".equ ECODE, %[ecode]\n"
-		"mv a1, %[size];"
+		"mv a1, %[blocks];"
 		"li a0, ECODE;"
 		"ecall;"
 		"mv %[mem], a0;"
 		: [mem]"=r"(mem)
-		: [size]"r"(size), [ecode]"i"(MEM_ALLOC)
+		: [blocks]"r"(blocks), [ecode]"i"(MEM_ALLOC)
 	);
 	return mem;
 }

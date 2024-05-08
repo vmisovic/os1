@@ -7,7 +7,7 @@ static uint8 *BLOCKS_END;
 static blk_t NUM_OF_BLOCKS;
 static blk_t free_blocks_count;
 
-static blk_t *blockDesc; 
+static blk_t *blockDesc;
 
 void memInit() {
 	// align last block to the MEM_BLOCK_SIZE to the end of the heap

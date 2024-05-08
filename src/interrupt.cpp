@@ -75,7 +75,7 @@ void userEcallHandler(Registers *saved) {
 	case MEM_ALLOC:
 		printString("ecall alloc\n");
 		printString("HOCU DA VIDIM OVO SAAD!!!1\n");
-		saved->a0 = (uint64)memAlloc((size_t)saved->a1);
+		saved->a0 = (uint64)blkAlloc((size_t)saved->a1);
 		break;
 	case MEM_FREE:
 		printString("kurac free\n");
@@ -87,7 +87,7 @@ void userEcallHandler(Registers *saved) {
 			print_hex(*((uint64*)reg->a1 + i));
 			__putc('\n');
 		}*/
-		saved->a0 = memFree((void*)saved->a1);
+		saved->a0 = blkFree((void*)saved->a1);
 		// ako nije nula onda je greska, nista nije freeovano
 		break;
 	case THREAD_CREATE:
