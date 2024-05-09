@@ -1,6 +1,7 @@
 #include "../h/interrupt.hpp"
 #include "../h/sys_regs.hpp"
 #include "../h/ecall_codes.h"
+#include "../h/scheduler.hpp"
 #include "../h/thread.hpp"
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
@@ -23,6 +24,7 @@ void interruptHandler(Registers *saved) {
 		// Spoljasnji prekidi
 		switch (val) {
 		case 1: // Softverski prekid iz 3. rezima - TAJMER
+			Scheduler::tick(); // checks sleeping threads
 			Thread::running->timerCounter++;
 			if (Thread::running->timerCounter >= DEFAULT_TIME_SLICE) {
 				printString("timer switch\n");
@@ -115,6 +117,11 @@ void userEcallHandler(Registers *saved) {
 		printString("thread dispatch\n");
 		Thread::dispatch();
 		printString("\n");
+		break;
+	case TIME_SLEEP:
+		printString("time sleep\n");
+		Thread::running->sleepingTime = (time_t)saved->a1;
+		Thread::dispatch();
 		break;
 	case GETC:
 		saved->a0 = __getc();

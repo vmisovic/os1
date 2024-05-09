@@ -10,7 +10,6 @@ public:
 	enum Mode { SYSTEM, USER };
 
 	static Thread *running;
-	time_t timerCounter = 0;
 
 	static Thread* create(
 		void (*run_routine)(void*),
@@ -37,6 +36,8 @@ private:
 	char *stack;
 	Context context;
 	bool finished = false;
+	time_t timerCounter = 0;
+	time_t sleepingTime = 0;
 	Mode mode;
 
 	Thread();

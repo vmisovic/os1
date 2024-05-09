@@ -5,6 +5,8 @@
 #include "../h/ecall_codes.h"
 
 // static allocation for initial thread, it will be automaticly dealocated
+// fale neki simboli pa mora
+// CXXFLAGS += -fno-use-cxa-atexit
 Thread Thread::initialThread;
 Thread *Thread::running = &initialThread;
 
@@ -122,10 +124,15 @@ void Thread::set_priviledge(Mode m) {
 void Thread::dispatch() {
 	Thread *oldRunning = running;
 
-	if (oldRunning && !oldRunning->finished)
-		Scheduler::put(oldRunning);
+	if (oldRunning && !oldRunning->finished) {
+		if (oldRunning->sleepingTime > 0)
+			Scheduler::putToSleep(oldRunning, oldRunning->sleepingTime);
+		else
+			Scheduler::put(oldRunning);
+	}
 	running = Scheduler::get();
 	running->timerCounter = 0;
+	running->sleepingTime = 0;
 
 	Context *oldContext = (oldRunning)? &oldRunning->context : nullptr;
 	switchContext(oldContext, &running->context);
