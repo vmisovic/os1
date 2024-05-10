@@ -3,12 +3,17 @@
 #include "../h/scheduler.hpp"
 #include "../h/sys_regs.hpp"
 #include "../h/ecall_codes.h"
+#include "../h/print.hpp"
 
-// static allocation for initial thread, it will be automaticly dealocated
-// fale neki simboli pa mora
-// CXXFLAGS += -fno-use-cxa-atexit
-Thread Thread::initialThread;
-Thread *Thread::running = &initialThread;
+Thread *Thread::running = nullptr;
+
+void Thread::Init() {
+	running = new Thread();
+}
+
+void Thread::Destroy() {
+	delete running;
+}
 
 Thread* Thread::create(void (*run_routine)(void*), void *args, void* sp, Mode m) {
 	return new Thread(run_routine, args, sp, m);

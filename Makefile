@@ -67,7 +67,6 @@ CXXFLAGS += -fno-rtti -fno-threadsafe-statics
 CXXFLAGS += $(shell ${CXX} -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 CXXFLAGS += ${DEBUG_FLAG}
 CXXFLAGS += -MMD -MP -MF"${@:%.o=%.d}"
-CXXFLAGS += -fno-use-cxa-atexit
 CXXFLAGS += -fno-exceptions
 
 LDSCRIPT = kernel.ld

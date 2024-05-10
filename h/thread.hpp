@@ -7,6 +7,9 @@ struct Registers;
 
 class Thread {
 public:
+	static void Init();
+	static void Destroy();
+
 	enum Mode { SYSTEM, USER };
 
 	static Thread *running;
@@ -20,8 +23,7 @@ public:
 	static void compleated();
 	static void yield();
 
-	bool isFinished() { return finished; }
-
+	bool isFinished() const { return finished; }
 private:
 	struct Context {
 		uint64 ra;
@@ -29,7 +31,6 @@ private:
 		uint64 sepc;
 		uint64 sstatus;
 	};
-	static Thread initialThread;
 	
 	void (*run_routine)(void*);
 	void *args;

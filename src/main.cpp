@@ -4,9 +4,9 @@
 #include "../h/print.hpp"
 #include "../h/sys_regs.hpp"
 //#include <stddef.h>
-
 #include "../h/thread.hpp"
 #include "../h/interrupt.hpp"
+#include "../h/scheduler.hpp"
 
 #define MNB(i) (1ull << (i))
 
@@ -33,8 +33,12 @@ void newTest(void *args) {
 }
 
 int main() {
-	printString("memInit()");
+	printString("Init()");
+
 	memInit();
+	Thread::Init();
+	Scheduler::Init();
+
 	printString("start: new thread\n");
 	int *arg = new int;
 	*arg = 9;
@@ -56,6 +60,10 @@ int main() {
 	delete arg;
 	printString("delete threads\n");
 	//delete kernT;
+
+	Scheduler::Destroy();
+	Thread::Destroy();
+
 	printString("KRAJ!!!\n");
 	terminate();
 	return 0;

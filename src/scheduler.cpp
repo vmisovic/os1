@@ -1,26 +1,25 @@
 #include "../h/scheduler.hpp"
 
-Scheduler::waitNode *Scheduler::waitingHead = nullptr;
-Scheduler::waitNode *Scheduler::waitingTail= nullptr;
+Queue<Thread> *Scheduler::waiting = nullptr;
 Scheduler::sleepNode *Scheduler::sleepingHead= nullptr;
 
+void Scheduler::Init() {
+	waiting = new Queue<Thread>;
+	sleepingHead = nullptr;
+}
+
+void Scheduler::Destroy() {
+	delete waiting;
+}
+
 void Scheduler::put(Thread *ready) {
-	waitNode *newNode = new waitNode(ready);
-	if (waitingTail)
-		waitingTail = waitingTail->next = newNode;
-	else
-		waitingHead = waitingTail = newNode;
+	printString("waiting address:\n");
+	printHex((uint64)&waiting);
+	waiting->insert(ready);
 }
 
 Thread* Scheduler::get() {
-	if (!waitingHead) return nullptr;
-	waitNode *del = waitingHead;
-	Thread *ret = del->thread;
-	waitingHead = waitingHead->next;
-	delete del;
-	if (!waitingHead)
-		waitingTail = nullptr;
-	return ret;
+	return waiting->remove();
 }
 
 void Scheduler::putToSleep(Thread *sleepy, time_t t) {

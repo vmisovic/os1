@@ -1,25 +1,23 @@
 #ifndef SCHEDULER_CPP
 #define SCHEDULER_CPP
 
-#include "../h/list.hpp"
+#include "../lib/hw.h"
+#include "../h/queue.hpp"
+
 class Thread;
 
 class Scheduler {
 public:
+	static void Init();
+	static void Destroy();
+
 	static void put(Thread *ready);
 	static Thread* get();
 
 	static void putToSleep(Thread *sleepy, time_t t);
 	static void tick();
 private:
-	struct waitNode {
-		Thread *thread;
-		waitNode *next;
-		waitNode(Thread *th, waitNode *n = nullptr) :
-			thread(th), next(n) {}
-	};
-	static waitNode *waitingHead;
-	static waitNode *waitingTail;
+	static Queue<Thread> *waiting;
 
 	struct sleepNode {
 		Thread *thread;
