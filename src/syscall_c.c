@@ -79,6 +79,100 @@ void thread_dispatch() {
 	);
 }
 
+int sem_open(sem_t *handle, unsigned init) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a2, %[init];"
+		"mv a1, %[handle];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [handle]"r"(handle),
+		  [init]"r"(init),
+		  [ecode]"i"(SEM_OPEN)
+	);
+	return ret;
+}
+
+int sem_close(sem_t handle) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a1, %[handle];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [handle]"r"(handle),
+		  [ecode]"i"(SEM_CLOSE)
+	);
+	return ret;
+}
+
+int sem_wait(sem_t id) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a1, %[id];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [id]"r"(id),
+		  [ecode]"i"(SEM_WAIT)
+	);
+	return ret;
+}
+
+int sem_signal(sem_t id) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a1, %[id];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [id]"r"(id),
+		  [ecode]"i"(SEM_SIGNAL)
+	);
+	return ret;
+}
+
+int sem_timedwait(sem_t id, time_t timeout) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a2, %[timeout];"
+		"mv a1, %[id];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [id]"r"(id),
+		  [timeout]"r"(timeout),
+		  [ecode]"i"(SEM_TIMEDWAIT)
+	);
+	return ret;
+}
+
+int sem_trywait(sem_t id) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a1, %[id];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [id]"r"(id),
+		  [ecode]"i"(SEM_TRYWAIT)
+	);
+	return ret;
+}
+
 char getc() {
 	char c = 0;
 	__asm__ __volatile__ (

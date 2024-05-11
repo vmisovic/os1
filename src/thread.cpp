@@ -22,10 +22,10 @@ Thread* Thread::create(void (*run_routine)(void*), void *args, void* sp, Mode m)
 Thread::Thread(void (*run_routine)(void*), void *args, void* sp, Mode mode) :
 	run_routine(run_routine),
 	args(args),
-	stack((sp == nullptr)? (char*)memAlloc(DEFAULT_STACK_SIZE) : nullptr),
+	stack((sp == nullptr)? memAlloc(DEFAULT_STACK_SIZE) : nullptr),
 	context({
 		(uint64)start_wrapper,
-		(uint64)((sp == 0)? (stack + DEFAULT_STACK_SIZE) : sp)
+		(uint64)((sp == 0)? ((uint8*)stack + DEFAULT_STACK_SIZE) : sp)
 	}),
 	mode(mode)
 {
@@ -125,11 +125,27 @@ void Thread::set_priviledge(Mode m) {
 	write_sstatus(newC->sstatus);
 	write_sepc(newC->sepc);
 }*/
+void Thread::block() {
+	blocked = true;
+	dispatch();
+}
+
+void Thread::unblock() {
+	blocked = false;
+	Scheduler::put(this);
+}
+
+void Thread::exit() {
+	Thread::running->finished = true;
+	delete Thread::running;
+	Thread::running = nullptr;
+	Thread::dispatch();
+}
 
 void Thread::dispatch() {
 	Thread *oldRunning = running;
 
-	if (oldRunning && !oldRunning->finished) {
+	if (oldRunning && !oldRunning->finished && !oldRunning->blocked) {
 		if (oldRunning->sleepingTime > 0)
 			Scheduler::putToSleep(oldRunning, oldRunning->sleepingTime);
 		else
@@ -141,4 +157,9 @@ void Thread::dispatch() {
 
 	Context *oldContext = (oldRunning)? &oldRunning->context : nullptr;
 	switchContext(oldContext, &running->context);
+}
+
+void Thread::putToSleep(time_t timeout) {
+	running->sleepingTime = timeout;
+	dispatch();
 }

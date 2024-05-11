@@ -3,6 +3,7 @@
 #include "../h/ecall_codes.h"
 #include "../h/scheduler.hpp"
 #include "../h/thread.hpp"
+#include "../h/semaphore.hpp"
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
 
@@ -82,21 +83,9 @@ void userEcallHandler(Registers *saved) {
 	case MEM_FREE:
 		printString("kurac free\n");
 		printString("HOCU DA VIDIM OVO SAAD!!!1\n");
-		/*for printing heap memory of freed segment
-		for (int i = -2; i < 8; i++) {
-			print_hex((uint64)((uint64*)reg->a1 + i));
-			__putc('\t');
-			print_hex(*((uint64*)reg->a1 + i));
-			__putc('\n');
-		}*/
 		saved->a0 = blkFree((void*)saved->a1);
-		// ako nije nula onda je greska, nista nije freeovano
 		break;
 	case THREAD_CREATE:
-		// a1 handle*
-		// a2 thread_routine
-		// a3 arg*
-		// a4 stack*
 		*(Thread**)saved->a1 = new Thread(
 			(void (*)(void*))saved->a2,
 			(void*)saved->a3,
@@ -104,24 +93,43 @@ void userEcallHandler(Registers *saved) {
 			Thread::Mode::USER
 		);
 		saved->a0 = (*(Thread**)saved->a1 != nullptr)? 0 : -1;
-		printHex((uint64)*(Thread**)saved->a1);
 		break;
 	case THREAD_EXIT:
 		printString("thread exit\n");
-		Thread::running->finished = true;
-		delete Thread::running;
-		Thread::running = nullptr;
-		Thread::dispatch();
+		Thread::exit();
+		saved->a0 = 0;
 		break;
 	case THREAD_DISPATCH:
 		printString("thread dispatch\n");
 		Thread::dispatch();
-		printString("\n");
+		saved->a0 = 0;
 		break;
 	case TIME_SLEEP:
 		printString("time sleep\n");
-		Thread::running->sleepingTime = (time_t)saved->a1;
-		Thread::dispatch();
+		Thread::putToSleep((time_t)saved->a1);
+		saved->a0 = 0;
+		break;
+	case SEM_OPEN:
+		*(Semaphore**)saved->a1 = new Semaphore((unsigned)saved->a2);
+		saved->a0 = (*(Semaphore**)saved->a1 != nullptr)? 0 : -1;
+		break;
+	case SEM_CLOSE:
+		delete (Semaphore*)saved->a1;
+		saved->a0 = 0;
+		break;
+	case SEM_WAIT:
+		((Semaphore*)saved->a1)->wait();
+		saved->a0 = 0;
+		break;
+	case SEM_SIGNAL:
+		((Semaphore*)saved->a1)->signal();
+		saved->a0 = 0;
+		break;
+	case SEM_TIMEDWAIT:
+		saved->a0 = ((Semaphore*)saved->a1)->timedWait((time_t)saved->a2);
+		break;
+	case SEM_TRYWAIT:
+		saved->a0 = ((Semaphore*)saved->a1)->tryWait();
 		break;
 	case GETC:
 		saved->a0 = __getc();
@@ -134,15 +142,19 @@ void userEcallHandler(Registers *saved) {
 
 void systemEcallHandler(Registers *saved) {
 	switch (saved->a0) {
-	case THREAD_EXIT:
+	case THREAD_EXIT: // calls Thread compleated
 		printString("thread exit\n");
-		Thread::running->finished = true;
-		Thread::dispatch();
+		Thread::exit();
 		break;
-	case THREAD_DISPATCH:
+	case THREAD_DISPATCH: // calls Thread yield
 		printString("thread dispatch\n");
 		Thread::dispatch();
-		printString("\n");
+		break;
+	case SEM_WAIT: // calls Semaphore aquire
+		((Semaphore*)saved->a1)->wait();
+		break;
+	case SEM_SIGNAL: // calls Semaphore release
+		((Semaphore*)saved->a1)->signal();
 		break;
 	}
 }

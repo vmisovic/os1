@@ -4,11 +4,21 @@
 extern "C" {
 #endif
 
+sem_t semafor;
+
 void dete(void *arg) {
 	putc('D');
 	putc('E');
 	putc('T');
 	putc('E');
+	int n = *(int*)arg;
+	thread_dispatch();
+	while (n--) {
+		while (sem_trywait(semafor) == 0) {
+			putc('D');
+		}
+		sem_signal(semafor);
+	}
 }
 
 void userMain(void *args) {
@@ -24,16 +34,21 @@ void userMain(void *args) {
 	putc('i');
 	putc('n');
 	putc('\n');
+	int *deteArg = (int*)mem_alloc(sizeof(int));
+	*deteArg = 3;
 	thread_t nit;
-	thread_create(&nit, dete, 0);
+	thread_create(&nit, dete, deteArg);
+	sem_open(&semafor, 2);
 	thread_dispatch();
-	//int *niz = mem_alloc(sizeof(int)*n);
-	//for (int i = 0; i < n; i++) {
-	//	niz[i] = i;
-	//	putc((char)i+'0');
-	//	thread_dispatch();
-	//}
-	//mem_free(niz);
+	while (n--) {
+		while (sem_trywait(semafor) == 0) {
+			putc('U');
+		}
+		sem_signal(semafor);
+		sem_signal(semafor);
+		thread_dispatch();
+	}
+	mem_free(deteArg);
 	thread_exit();
 }
 
