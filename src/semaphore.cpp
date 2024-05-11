@@ -1,6 +1,8 @@
 #include "../h/semaphore.hpp"
 #include "../h/ecall_codes.h"
 
+namespace kernel {
+
 void Semaphore::aquire() {
 	__asm__ __volatile__ (
 		".equ ECODE, %[ecode]\n"
@@ -51,4 +53,6 @@ int Semaphore::tryWait() {
 		return 1;
 	--val;
 	return 0;
+}
+
 }

@@ -1,10 +1,10 @@
 // export switchContext
-.global _ZN6Thread13switchContextEPNS_7ContextES1_
+.global _ZN6kernel6Thread13switchContextEPNS0_7ContextES2_
 
 .text
-// void switchContext(Context oldC, Context newC);
-.type _ZN6Thread13switchContextEPNS_7ContextES1_ @function
-_ZN6Thread13switchContextEPNS_7ContextES1_:
+// void kernel::Thread::switchContext(Context oldC, Context newC);
+.type _ZN6kernel6Thread13switchContextEPNS0_7ContextES2_ @function
+_ZN6kernel6Thread13switchContextEPNS0_7ContextES2_:
 	// a0 - oldC
 	// a1 - newC
 	/* Context: { ra, sp, sepc, sstatus } */

@@ -8,6 +8,8 @@
 #include "../h/interrupt.hpp"
 #include "../h/scheduler.hpp"
 
+using namespace kernel;
+
 #define MNB(i) (1ull << (i))
 
 extern "C" void userMain(void *args);

@@ -4,7 +4,6 @@
 typedef unsigned long size_t;
 
 #define DEFAULT_QUEUE_LEN 32
-#include "../h/print.hpp"
 
 template<typename T>
 class Queue {

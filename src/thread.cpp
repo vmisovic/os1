@@ -5,6 +5,8 @@
 #include "../h/ecall_codes.h"
 #include "../h/print.hpp"
 
+namespace kernel {
+
 Thread *Thread::running = nullptr;
 
 void Thread::Init() {
@@ -162,4 +164,6 @@ void Thread::dispatch() {
 void Thread::putToSleep(time_t timeout) {
 	running->sleepingTime = timeout;
 	dispatch();
+}
+
 }

@@ -1,9 +1,6 @@
 #ifndef LIST_HPP
 #define LIST_HPP
 
-#include "../lib/hw.h"
-#include "../h/print.hpp"
-
 template<typename T>
 class List {
 private:

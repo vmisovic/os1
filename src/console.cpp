@@ -1,6 +1,8 @@
 #include "../h/console.hpp"
 #include "../lib/hw.h"
 
+namespace kernel {
+
 void __putc(char chr) {
 	uint8 *status_reg = (uint8*)CONSOLE_STATUS;
 	uint8 *tx_reg = (uint8*)CONSOLE_TX_DATA;
@@ -17,4 +19,6 @@ char __getc() {
 	while ((*status_reg & CONSOLE_RX_STATUS_BIT) == 0);
 	// stap kanap resenje
 	return *rx_reg;
+}
+
 }

@@ -4,6 +4,8 @@
 #include "../lib/hw.h"
 #include "../h/queue.hpp"
 
+namespace kernel {
+
 class Thread;
 
 class Scheduler {
@@ -28,5 +30,7 @@ private:
 	};
 	static sleepNode *sleepingHead;
 };
+
+}
 
 #endif

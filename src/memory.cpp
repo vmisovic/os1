@@ -1,6 +1,8 @@
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
 
+namespace kernel {
+
 static uint8 *BLOCKS_START;
 static uint8 *BLOCKS_END;
 
@@ -103,4 +105,6 @@ void *memAlloc(size_t bytes) {
 
 int memFree(void *ptr) {
 	return blkFree(ptr);
+}
+
 }

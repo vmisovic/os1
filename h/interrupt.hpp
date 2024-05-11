@@ -3,6 +3,8 @@
 
 #include "../lib/hw.h"
 
+namespace kernel {
+
 struct Registers;
 
 extern void interruptWrapper();
@@ -57,5 +59,7 @@ struct Registers {
 	uint64 t5;
 	uint64 t6;
 };
+
+}
 
 #endif

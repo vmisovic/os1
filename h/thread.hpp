@@ -3,6 +3,8 @@
 
 #include "../lib/hw.h"
 
+namespace kernel {
+
 struct Registers;
 
 class Thread {
@@ -61,5 +63,7 @@ private:
 	friend void systemEcallHandler(Registers *saved);
 	friend class Semaphore;
 };
+
+}
 
 #endif

@@ -4,6 +4,8 @@
 #include "../h/thread.hpp"
 #include "../h/queue.hpp"
 
+namespace kernel {
+
 class Semaphore {
 public:
 	Semaphore(unsigned init = 1) : val(init), blocked() {}
@@ -26,5 +28,7 @@ private:
 	friend void userEcallHandler(Registers *saved);
 	friend void systemEcallHandler(Registers *saved);
 };
+
+}
 
 #endif

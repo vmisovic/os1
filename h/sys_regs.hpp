@@ -3,6 +3,8 @@
 
 #include "../lib/hw.h"
 
+namespace kernel {
+
 void terminate();
 
 uint64 read_sstatus();
@@ -89,6 +91,8 @@ inline void write_scause(uint64 scause) {
 
 inline void write_stvec(uint64 stvec) {
 	__asm__ __volatile__ ("csrw stvec, %[stvec]" : : [stvec]"r"(stvec));
+}
+
 }
 
 #endif

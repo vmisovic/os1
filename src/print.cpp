@@ -1,5 +1,7 @@
 #include "../h/print.hpp"
 
+namespace kernel {
+
 // not tested fully
 void printInt(long int n)
 {
@@ -33,4 +35,6 @@ void printString(const char *str)
 		__putc(*str);
 		str++;
 	}
+}
+
 }

@@ -7,7 +7,10 @@
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
 
-Thread::Mode currentMode = Thread::Mode::SYSTEM;
+// used in new and delete operators
+kernel::Thread::Mode currentMode = kernel::Thread::Mode::SYSTEM;
+
+namespace kernel {
 
 void interruptInit() {
 	write_stvec((uint64)interruptWrapper);
@@ -157,4 +160,6 @@ void systemEcallHandler(Registers *saved) {
 		((Semaphore*)saved->a1)->signal();
 		break;
 	}
+}
+
 }

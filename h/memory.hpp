@@ -3,6 +3,8 @@
 
 #include "../lib/hw.h"
 
+namespace kernel {
+
 void memInit();
 
 // approximate heap size: 128MB
@@ -13,5 +15,7 @@ void *blkAlloc(size_t blocks);
 int blkFree(void *ptr);
 void *memAlloc(size_t bytes);
 int memFree(void *ptr);
+
+}
 
 #endif

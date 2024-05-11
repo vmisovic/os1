@@ -1,4 +1,7 @@
 #include "../h/scheduler.hpp"
+#include "../h/print.hpp"
+
+namespace kernel {
 
 Queue<Thread> *Scheduler::waiting = nullptr;
 Scheduler::sleepNode *Scheduler::sleepingHead= nullptr;
@@ -42,4 +45,6 @@ void Scheduler::tick() {
 		sleepingHead = sleepingHead->next;
 		delete del;
 	}
+}
+
 }
