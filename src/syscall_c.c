@@ -173,6 +173,21 @@ int sem_trywait(sem_t id) {
 	return ret;
 }
 
+int time_sleep(time_t timeout) {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"mv a1, %[timeout];"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [timeout]"r"(timeout),
+		  [ecode]"i"(TIME_SLEEP)
+	);
+	return ret;
+}
+
 char getc() {
 	char c = 0;
 	__asm__ __volatile__ (
