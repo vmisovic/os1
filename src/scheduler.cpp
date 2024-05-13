@@ -13,6 +13,7 @@ void Scheduler::Init() {
 
 void Scheduler::Destroy() {
 	delete waiting;
+	// TODO destroy sleeping list
 }
 
 void Scheduler::put(Thread *ready) {

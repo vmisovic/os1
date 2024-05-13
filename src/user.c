@@ -37,8 +37,11 @@ void userMain(void *args) {
 	int *deteArg = (int*)mem_alloc(sizeof(int));
 	*deteArg = 3;
 	thread_t nit;
-	thread_create(&nit, dete, deteArg);
+	putc('s');
 	sem_open(&semafor, 2);
+	putc('c');
+	thread_create(&nit, dete, deteArg);
+	putc('d');
 	thread_dispatch();
 	while (n--) {
 		while (sem_trywait(semafor) == 0) {
@@ -48,6 +51,7 @@ void userMain(void *args) {
 		sem_signal(semafor);
 		thread_dispatch();
 	}
+	sem_close(semafor);
 	mem_free(deteArg);
 	thread_exit();
 }

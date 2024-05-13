@@ -38,7 +38,9 @@ int main() {
 	printString("Init()");
 
 	memInit();
+	printString("Init thread\n");
 	Thread::Init();
+	printString("Init scheduler\n");
 	Scheduler::Init();
 
 	printString("start: new thread\n");
@@ -46,7 +48,6 @@ int main() {
 	*arg = 9;
 	//void *sp = (uint8*)memAlloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
 	Thread *userT = Thread::create(userMain, arg, nullptr, Thread::Mode::USER);
-	//Thread *kernT = new Thread(kurac, nullptr, nullptr, Thread::Mode::SYSTEM);
 	printString("end: new thread\n");
 
 	interruptInit();
@@ -57,13 +58,13 @@ int main() {
 		//read_sip();
 		Thread::yield();
 	}
-	
-	printString("delete int");
-	delete arg;
-	printString("delete threads\n");
-	//delete kernT;
 
+	printString("delete int\n");
+	delete arg;
+
+	printString("Destroy scheduler\n");
 	Scheduler::Destroy();
+	printString("Destroy thread");
 	Thread::Destroy();
 
 	printString("KRAJ!!!\n");

@@ -31,20 +31,14 @@ Thread::Thread(void (*run_routine)(void*), void *args, void* sp, Mode mode) :
 	}),
 	mode(mode)
 {
-	printString("\nSTART_WRAPPER ADDR: ");
-	printHex((uint64)start_wrapper);
 	printString("\nSTACK");
 	printHex((uint64)stack);
-	printString("\nCONTEXT ra: ");
-	printHex((uint64)context.ra);
-	printString("\nCONTEXT sp: ");
+	printString("\nSTACK POINTER: ");
 	printHex((uint64)context.sp);
+	printString("\nRUN ROUTINE: ");
+	printHex((uint64)run_routine);
 	printString("\n");
 
-	if (stack) {
-		for (size_t i = 0; i < DEFAULT_STACK_SIZE / sizeof(uint64); i++)
-			*((uint64*)stack + i) = (uint64)args;
-	}
 	Scheduler::put(this);
 }
 
