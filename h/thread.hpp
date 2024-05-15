@@ -31,8 +31,6 @@ private:
 	struct Context {
 		uint64 ra;
 		uint64 sp;
-		uint64 sepc;
-		uint64 sstatus;
 	};
 	
 	void (*run_routine)(void*);
@@ -58,9 +56,8 @@ private:
 	void block();
 	void unblock();
 
-	friend void interruptHandler(Registers *saved);
-	friend void userEcallHandler(Registers *saved);
-	friend void systemEcallHandler(Registers *saved);
+	friend void interruptHandler(volatile Registers *saved);
+	friend void ecallHandler(volatile Registers *saved);
 	friend class Semaphore;
 };
 

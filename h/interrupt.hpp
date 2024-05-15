@@ -7,11 +7,11 @@ namespace kernel {
 
 struct Registers;
 
-extern void interruptWrapper();
-void interruptHandler(Registers *saved);
 void interruptInit();
-void userEcallHandler(Registers *saved);
-void systemEcallHandler(Registers *saved);
+extern void interruptWrapper();
+void interruptHandler(volatile Registers *saved);
+void ecallHandler(volatile Registers *saved);
+void interruptEnable();
 
 struct Registers {
 //x0 zero Hard-wired zero —

@@ -6,7 +6,7 @@
 class Thread {
 public:
 	Thread(void (*body)(void*), void *arg) : body(body), arg(arg) {}
-	virtual ~Thread();
+	virtual ~Thread() {}
 	int start() { return thread_create(&myHandle, body, arg); }
 
 	static void dispatch() { thread_dispatch(); }

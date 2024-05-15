@@ -11,9 +11,13 @@ Thread *Thread::running = nullptr;
 
 void Thread::Init() {
 	running = new Thread();
+	printString("Initial running thread: ", PRINT_THREAD);
+	printHex((uint64)running, PRINT_THREAD);
+	printString("\n", PRINT_THREAD);
 }
 
 void Thread::Destroy() {
+	printString("Destroying initial thread.\n", PRINT_THREAD);
 	delete running;
 }
 
@@ -31,13 +35,14 @@ Thread::Thread(void (*run_routine)(void*), void *args, void* sp, Mode mode) :
 	}),
 	mode(mode)
 {
-	printString("\nSTACK");
-	printHex((uint64)stack);
-	printString("\nSTACK POINTER: ");
-	printHex((uint64)context.sp);
-	printString("\nRUN ROUTINE: ");
-	printHex((uint64)run_routine);
-	printString("\n");
+	printString("New thread created:\n", PRINT_THREAD);
+	printString("STACK:\t", PRINT_THREAD);
+	printHex((uint64)stack, PRINT_THREAD);
+	printString("\nsp:\t", PRINT_THREAD);
+	printHex((uint64)context.sp, PRINT_THREAD);
+	printString("\nMode (0-SYSTEM, 1-USER): ", PRINT_THREAD);
+	printInt(mode, PRINT_THREAD);
+	printString("\n", PRINT_THREAD);
 
 	Scheduler::put(this);
 }
@@ -48,15 +53,12 @@ Thread::Thread() :
 	stack(nullptr),
 	context({0}),
 	mode(SYSTEM)
-{
-	printString("running: ");
-	printHex((uint64)this);
-	printString(" initalized.\n");
-}
+{}
 
 Thread::~Thread() {
+	printString("Thread destructor:\n", PRINT_THREAD);
 	if (stack) {
-		printString("Brisem stek koji sam alocirao");
+		printString("Brisem alocirani stek:\n", PRINT_THREAD);
 		memFree(stack);
 	}
 }
@@ -108,19 +110,6 @@ void Thread::set_priviledge(Mode m) {
 	);
 }
 
-/*void Thread::switchContext(Context *oldC, Context *newC) {
-	oldC->sepc = read_sepc();
-	oldC->sstatus = read_sstatus();
-	__asm__ __volatile__ (
-		"sd ra, 0 * 8(%[oldC]);"
-		"sd sp, 1 * 8(%[oldC]);"
-		"ld ra, 0 * 8(%[newC]);"
-		"ld sp, 1 * 8(%[newC]);"
-		: : [oldC]"r"(oldC), [newC]"r"(newC)
-	);
-	write_sstatus(newC->sstatus);
-	write_sepc(newC->sepc);
-}*/
 void Thread::block() {
 	blocked = true;
 	dispatch();

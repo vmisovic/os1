@@ -24,9 +24,8 @@ private:
 	long int val;
 	Queue<Thread> blocked;
 
-	friend void interruptHandler(Registers *saved);
-	friend void userEcallHandler(Registers *saved);
-	friend void systemEcallHandler(Registers *saved);
+	friend void interruptHandler(volatile Registers *saved);
+	friend void ecallHandler(volatile Registers *saved);
 };
 
 }

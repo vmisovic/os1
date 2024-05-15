@@ -13,17 +13,24 @@ kernel::Thread::Mode currentMode = kernel::Thread::Mode::SYSTEM;
 namespace kernel {
 
 void interruptInit() {
+	printString("Init stvec\n", PRINT_INFO);
 	write_stvec((uint64)interruptWrapper);
+}
+
+void interruptEnable() {
+	printString("Interrupt Enable\n", PRINT_INFO);
 	write_sstatus(read_sstatus() | SSIE);
 }
 
-void interruptHandler(Registers *saved) {
+void interruptHandler(volatile Registers *saved) {
 	currentMode = Thread::Mode::SYSTEM;
-	uint64 scause = read_scause();
-	uint64 bnt = (uint64)(scause >> 63);
-	uint64 val = (uint64)(scause & 0xff);
+	volatile uint64 scause = read_scause();
+	volatile uint64 bnt = (uint64)(scause >> 63);
+	volatile uint64 val = (uint64)(scause & 0xff);
+	volatile uint64 sepc = read_sepc();
+	volatile uint64 sstatus = read_sstatus();
 
-	int code;
+	volatile int code;
 	if (bnt) {
 		// Spoljasnji prekidi
 		switch (val) {
@@ -31,7 +38,7 @@ void interruptHandler(Registers *saved) {
 			Scheduler::tick(); // checks sleeping threads
 			Thread::running->timerCounter++;
 			if (Thread::running->timerCounter >= DEFAULT_TIME_SLICE) {
-				printString("timer switch\n");
+				printString("timer switch\n", PRINT_TIMER_SWITCH);
 				Thread::dispatch();
 			}
 			break;
@@ -52,44 +59,40 @@ void interruptHandler(Registers *saved) {
 		case 2:
 		case 5:
 		case 7:
-			printString("OZBILJAN ZAJEB\n");
-			printString("scause: ");
-			printHex(read_scause());
-			printString("\tsepc: ");
-			printHex(read_sepc());
-			Thread::running->finished = true;
-			Thread::dispatch();
+			printString("OZBILJNA GRESKA\n", PRINT_ERROR);
+			printString("scause: ", PRINT_ERROR);
+			printHex(read_scause(), PRINT_ERROR);
+			printString("\tsepc: ", PRINT_ERROR);
+			printHex(read_sepc(), PRINT_ERROR);
+			printString("\nUBIJAM NIT\n", PRINT_ERROR);
+			Thread::exit();
 			break;
 		case 8:	// ecall iz korisničkog režima
-			printString("ecall korisnicki rezim\n");
-			write_sepc(read_sepc() + 4);
-			userEcallHandler(saved);
-			break;
 		case 9:	// ecall iz sistemskog režima
-			printString("ecall sistemski rezim\n");
-			write_sepc(read_sepc() + 4);
-			systemEcallHandler(saved);
+			ecallHandler(saved);
+			sepc += 4;
 			break;
 		}
 	}
-	currentMode = Thread::running->mode;
+	currentMode = (sstatus | SPP)? Thread::Mode::SYSTEM : Thread::Mode::USER;
+	write_sepc(sepc);
+	write_sstatus(sstatus);
 	write_sip(read_sip() & ~SSIE);
 }
 
-void userEcallHandler(Registers *saved) {
+void ecallHandler(volatile Registers *saved) {
 	switch (saved->a0) {
 	case MEM_ALLOC:
-		printString("ecall alloc\n");
-		printString("HOCU DA VIDIM OVO SAAD!!!1\n");
+		printString("ecall alloc\n", PRINT_ECALL);
 		saved->a0 = (uint64)blkAlloc((size_t)saved->a1);
 		break;
 	case MEM_FREE:
-		printString("kurac free\n");
-		printString("HOCU DA VIDIM OVO SAAD!!!1\n");
+		printString("ecall free\n", PRINT_ECALL);
 		saved->a0 = blkFree((void*)saved->a1);
 		break;
 	case THREAD_CREATE:
-		*(Thread**)saved->a1 = new Thread(
+		printString("ecall thread create\n", PRINT_ECALL);
+		*(Thread**)saved->a1 = Thread::create(
 			(void (*)(void*))saved->a2,
 			(void*)saved->a3,
 			(void*)saved->a4,
@@ -98,40 +101,46 @@ void userEcallHandler(Registers *saved) {
 		saved->a0 = (*(Thread**)saved->a1 != nullptr)? 0 : -1;
 		break;
 	case THREAD_EXIT:
-		printString("thread exit\n");
+		printString("ecall thread exit\n", PRINT_ECALL);
 		Thread::exit();
 		saved->a0 = 0;
 		break;
 	case THREAD_DISPATCH:
-		printString("thread dispatch\n");
+		printString("ecall thread dispatch\n", PRINT_DISPATCH);
 		Thread::dispatch();
 		saved->a0 = 0;
 		break;
 	case TIME_SLEEP:
-		printString("time sleep\n");
+		printString("ecall time sleep\n", PRINT_ECALL);
 		Thread::putToSleep((time_t)saved->a1);
 		saved->a0 = 0;
 		break;
 	case SEM_OPEN:
+		printString("ecall sem open\n", PRINT_ECALL);
 		*(Semaphore**)saved->a1 = new Semaphore((unsigned)saved->a2);
 		saved->a0 = (*(Semaphore**)saved->a1 != nullptr)? 0 : -1;
 		break;
 	case SEM_CLOSE:
+		printString("ecall sem close\n", PRINT_ECALL);
 		delete (Semaphore*)saved->a1;
 		saved->a0 = 0;
 		break;
 	case SEM_WAIT:
+		printString("ecall sem wait\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->wait();
 		saved->a0 = 0;
 		break;
 	case SEM_SIGNAL:
+		printString("ecall sem signal\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->signal();
 		saved->a0 = 0;
 		break;
 	case SEM_TIMEDWAIT:
+		printString("ecall sem timedWait\n", PRINT_ECALL);
 		saved->a0 = ((Semaphore*)saved->a1)->timedWait((time_t)saved->a2);
 		break;
 	case SEM_TRYWAIT:
+		printString("ecall sem tryWait\n", PRINT_ECALL);
 		saved->a0 = ((Semaphore*)saved->a1)->tryWait();
 		break;
 	case GETC:
@@ -139,25 +148,6 @@ void userEcallHandler(Registers *saved) {
 		break;
 	case PUTC:
 		__putc((char)saved->a1);
-		break;
-	}
-}
-
-void systemEcallHandler(Registers *saved) {
-	switch (saved->a0) {
-	case THREAD_EXIT: // calls Thread compleated
-		printString("thread exit\n");
-		Thread::exit();
-		break;
-	case THREAD_DISPATCH: // calls Thread yield
-		printString("thread dispatch\n");
-		Thread::dispatch();
-		break;
-	case SEM_WAIT: // calls Semaphore aquire
-		((Semaphore*)saved->a1)->wait();
-		break;
-	case SEM_SIGNAL: // calls Semaphore release
-		((Semaphore*)saved->a1)->signal();
 		break;
 	}
 }

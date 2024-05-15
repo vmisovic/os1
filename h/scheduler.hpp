@@ -26,9 +26,12 @@ private:
 		time_t relTime;
 		sleepNode *next;
 		sleepNode(Thread *th, time_t rt, sleepNode *n = nullptr) :
-			thread(th), relTime(rt), next(n) {}
+			thread(th), relTime(rt), next(n)
+		{ if (next) next->relTime -= rt; }
 	};
 	static sleepNode *sleepingHead;
+
+	static void koSpava();
 };
 
 }

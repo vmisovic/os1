@@ -3,8 +3,9 @@
 namespace kernel {
 
 // not tested fully
-void printInt(long int n)
+void printInt(long int n, bool enabled)
 {
+	if (!enabled) return;
 	if (n < 0) {
 		__putc('-');
 		n = -n;
@@ -19,8 +20,9 @@ void printInt(long int n)
 	}
 }
 
-void printHex(uint64 n)
+void printHex(uint64 n, bool enabled)
 {
+	if (!enabled) return;
 	__putc('0');
 	__putc('x');
 	for (short i = 15; i >= 0; --i) {
@@ -29,8 +31,9 @@ void printHex(uint64 n)
 	}
 }
 
-void printString(const char *str)
+void printString(const char *str, bool enabled)
 {
+	if (!enabled) return;
 	while(*str != '\0') {
 		__putc(*str);
 		str++;
