@@ -4,21 +4,27 @@
 extern "C" {
 #endif
 
-sem_t semafor;
+static sem_t semafor;
+static sem_t end;
 
 void dete(void *arg) {
 	putc('D');
 	putc('E');
 	putc('T');
 	putc('E');
-	int n = *(int*)arg;
-	thread_dispatch();
-	while (n--) {
-		while (sem_trywait(semafor) == 0) {
-			putc('D');
-		}
-		sem_signal(semafor);
-	}
+	putc('\n');
+
+
+	putc('w');
+	putc('a');
+	putc('i');
+	putc('t');
+	putc('\n');
+	sem_wait(semafor);
+	putc('O');
+	putc('K');
+	putc('\n');
+	sem_signal(end);
 }
 
 void userMain(void *args) {
@@ -34,24 +40,38 @@ void userMain(void *args) {
 	putc('i');
 	putc('n');
 	putc('\n');
+
+	sem_open(&semafor, 0);
+	sem_open(&end, 0);
+
 	int *deteArg = (int*)mem_alloc(sizeof(int));
 	*deteArg = 3;
 	thread_t nit;
-	putc('s');
-	sem_open(&semafor, 2);
-	putc('c');
 	thread_create(&nit, dete, deteArg);
+
+	putc('s');
+	putc('l');
+	putc('e');
+	putc('e');
+	putc('p');
+	putc('\n');
+	time_sleep(30);
+	putc('s');
+	putc('i');
+	putc('g');
+	putc('n');
+	putc('a');
+	putc('l');
+	putc('\n');
+	sem_signal(semafor);
+
+	sem_wait(end);
+	putc('e');
+	putc('n');
 	putc('d');
-	thread_dispatch();
-	while (n--) {
-		while (sem_trywait(semafor) == 0) {
-			putc('U');
-		}
-		sem_signal(semafor);
-		sem_signal(semafor);
-		thread_dispatch();
-	}
+	putc('\n');
 	sem_close(semafor);
+	sem_close(end);
 	mem_free(deteArg);
 	thread_exit();
 }

@@ -11,13 +11,13 @@ Thread *Thread::running = nullptr;
 
 void Thread::Init() {
 	running = new Thread();
-	printString("Initial running thread: ", PRINT_THREAD);
-	printHex((uint64)running, PRINT_THREAD);
-	printString("\n", PRINT_THREAD);
+	printString("Initial running thread: ", PRINT_INFO);
+	printHex((uint64)running, PRINT_INFO);
+	printString("\n", PRINT_INFO);
 }
 
 void Thread::Destroy() {
-	printString("Destroying initial thread.\n", PRINT_THREAD);
+	printString("Destroying initial thread.\n", PRINT_INFO);
 	delete running;
 }
 

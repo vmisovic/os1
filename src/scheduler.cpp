@@ -17,11 +17,13 @@ void Scheduler::koSpava() {
 }
 
 void Scheduler::Init() {
+	printString("Scheduler Init, new queue waiting.\n", PRINT_INFO);
 	waiting = new Queue<Thread>;
 	sleepingHead = nullptr;
 }
 
 void Scheduler::Destroy() {
+	printString("Scheduler destroy waiting and sleeping.\n", PRINT_INFO);
 	delete waiting;
 	while (sleepingHead) {
 		sleepNode *del = sleepingHead;

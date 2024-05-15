@@ -8,11 +8,12 @@ namespace kernel {
 
 #define PRINT_ERROR true
 #define PRINT_INFO true
-#define PRINT_ECALL true
+#define PRINT_ECALL false
 #define PRINT_TIMER_SWITCH false
 #define PRINT_DISPATCH false
 #define PRINT_MEMORY false
 #define PRINT_THREAD false
+#define PRINT_SEMAPHORE false
 #define PRINT_SLEEPY false
 
 void printInt(long int n, bool enabled = true);

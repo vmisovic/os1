@@ -1,5 +1,6 @@
 #include "../h/semaphore.hpp"
 #include "../h/ecall_codes.h"
+#include "../h/print.hpp"
 
 namespace kernel {
 
@@ -28,14 +29,18 @@ void Semaphore::release() {
 }
 
 void Semaphore::wait() {
-	if (--val < 0) 
+	if (--val < 0) {
+		printString("Blokiranje trenutne niti.\n", PRINT_SEMAPHORE);
+		blocked.insert(Thread::running);
 		Thread::running->block();
+	}
 }
 
 void Semaphore::signal() {
 	if (++val <= 0) {
+		printString("Deblokiranje niti iz reda blocked.\n", PRINT_SEMAPHORE);
 		Thread *t = blocked.remove();
-		t->unblock();
+		if (t != nullptr) t->unblock();
 	}
 }
 
@@ -45,6 +50,7 @@ int Semaphore::timedWait(time_t timeout) {
 	Thread::putToSleep(timeout);
 	if (tryWait() == 0)
 		return 0;
+	printString("timedWait isteklo vreme.\n", PRINT_SEMAPHORE);
 	return -2;
 }
 

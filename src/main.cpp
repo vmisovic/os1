@@ -1,73 +1,38 @@
 #include "../lib/hw.h"
-#include "../h/console.hpp"
-#include "../h/memory.hpp"
-#include "../h/print.hpp"
 #include "../h/sys_regs.hpp"
-//#include <stddef.h>
-#include "../h/thread.hpp"
+#include "../h/memory.hpp"
 #include "../h/interrupt.hpp"
+#include "../h/thread.hpp"
 #include "../h/scheduler.hpp"
+#include "../h/print.hpp"
 
 using namespace kernel;
 
-#define MNB(i) (1ull << (i))
-
 extern "C" void userMain(void *args);
 
-void kurac(void *) {
-	int i = 10;
-	while (i--) {
-		printString("kurac\n");
-		Thread::yield();
-	}
-}
-
-#include "../h/syscall_c.h"
-void newTest(void *args) {
-	int n = *(int*)args;
-	int *niz = new int[n];
-	for (int i = 0; i < n; i++) {
-		niz[i] = i;
-		putc((char)i+'0');
-		thread_dispatch();
-	}
-	delete[] niz;
-}
-
 int main() {
-	printString("Init()");
-
+	printString("INITIALIZATION:\n", PRINT_INFO);
 	memInit();
-	printString("Init thread\n");
+	interruptInit();
 	Thread::Init();
-	printString("Init scheduler\n");
 	Scheduler::Init();
-
-	printString("start: new thread\n");
+	printString("Creating user thread.\n", PRINT_INFO);
 	int *arg = new int;
 	*arg = 9;
-	//void *sp = (uint8*)memAlloc(DEFAULT_STACK_SIZE) + DEFAULT_STACK_SIZE;
 	Thread *userT = Thread::create(userMain, arg, nullptr, Thread::Mode::USER);
-	printString("end: new thread\n");
+	interruptEnable();
 
-	interruptInit();
-
-	printString("while loop\n");
-	while (!userT->isFinished()){//} || !kernT->isFinished()) {
-		printString("main dosao na red, al ceka.\n");
-		//read_sip();
+	printString("****************\n", PRINT_INFO);
+	printString("USER MAIN START:\n\n", PRINT_INFO);
+	while (!userT->isFinished()) {
 		Thread::yield();
 	}
+	printString("\nUSER MAIN END.\n", PRINT_INFO);
+	printString("****************\n", PRINT_INFO);
 
-	printString("delete int\n");
-	delete arg;
-
-	printString("Destroy scheduler\n");
+	printString("SHUTDOWN\n", PRINT_INFO);
 	Scheduler::Destroy();
-	printString("Destroy thread");
 	Thread::Destroy();
-
-	printString("KRAJ!!!\n");
 	terminate();
 	return 0;
 }
