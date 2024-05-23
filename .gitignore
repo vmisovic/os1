@@ -2,5 +2,5 @@ build
 .ccls
 .gdbinit
 kernel
-kernel.asm
+kernel*.asm
 out*

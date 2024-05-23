@@ -6,6 +6,7 @@
 #include "../h/semaphore.hpp"
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
+#include "../h/console.hpp"
 
 // used in new and delete operators
 kernel::Thread::Mode currentMode = kernel::Thread::Mode::SYSTEM;
@@ -45,7 +46,7 @@ void interruptHandler(volatile Registers *saved) {
 		case 9: // Spoljašnji hardverski prekid - KONZOLA
 			code = plic_claim();
 			if (code == CONSOLE_IRQ) { // stigao prekid od konzole 
-				;;
+				//Console::handler();
 			}
 			else { // prekid od drugih uredjaja
 				;;
@@ -121,6 +122,7 @@ void ecallHandler(volatile Registers *saved) {
 		saved->a0 = (*(Semaphore**)saved->a1 != nullptr)? 0 : -1;
 		break;
 	case SEM_CLOSE:
+		// TODO return value
 		printString("ecall sem close\n", PRINT_ECALL);
 		delete (Semaphore*)saved->a1;
 		saved->a0 = 0;
@@ -134,6 +136,7 @@ void ecallHandler(volatile Registers *saved) {
 		printString("ecall sem signal\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->signal();
 		saved->a0 = 0;
+		Thread::dispatch();
 		break;
 	case SEM_TIMEDWAIT:
 		printString("ecall sem timedWait\n", PRINT_ECALL);
@@ -144,10 +147,12 @@ void ecallHandler(volatile Registers *saved) {
 		saved->a0 = ((Semaphore*)saved->a1)->tryWait();
 		break;
 	case GETC:
-		saved->a0 = __getc();
+		saved->a0 = Console::get();
+		//saved->a0 = __getc();
 		break;
 	case PUTC:
-		__putc((char)saved->a1);
+		Console::put((char)saved->a1);
+		//__putc((char)saved->a1);
 		break;
 	}
 }

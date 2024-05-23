@@ -32,7 +32,7 @@ private:
 		uint64 ra;
 		uint64 sp;
 	};
-	
+
 	void (*run_routine)(void*);
 	void *args;
 	void *stack;

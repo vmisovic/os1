@@ -8,18 +8,22 @@
 
 using namespace kernel;
 
-extern "C" void userMain(void *args);
+extern void userMain();
+
+void userWrapper(void *) {
+	//while (true)
+		userMain();
+}
 
 int main() {
 	printString("INITIALIZATION:\n", PRINT_INFO);
 	memInit();
-	interruptInit();
 	Thread::Init();
 	Scheduler::Init();
+	Console::Init();
+	interruptInit();
 	printString("Creating user thread.\n", PRINT_INFO);
-	int *arg = new int;
-	*arg = 9;
-	Thread *userT = Thread::create(userMain, arg, nullptr, Thread::Mode::USER);
+	Thread *userT = Thread::create(userWrapper, nullptr, nullptr, Thread::Mode::USER);
 	interruptEnable();
 
 	printString("****************\n", PRINT_INFO);
@@ -27,6 +31,7 @@ int main() {
 	while (!userT->isFinished()) {
 		Thread::yield();
 	}
+	Console::Destroy();
 	printString("\nUSER MAIN END.\n", PRINT_INFO);
 	printString("****************\n", PRINT_INFO);
 
