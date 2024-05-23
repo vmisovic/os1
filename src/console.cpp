@@ -38,15 +38,21 @@ char Console::get() {
 	return input->get();
 }
 
+bool isRXready() { return *status_reg & CONSOLE_RX_STATUS_BIT; }
+bool isTXready(int buf_cnt) {
+	return (buf_cnt > 0) && (*status_reg & CONSOLE_TX_STATUS_BIT);
+}
+
 void Console::handler() {
-	while (output->getCnt() > 0 && (*status_reg & CONSOLE_TX_STATUS_BIT))
-		*tx_reg = output->get();
-	while (*status_reg & CONSOLE_RX_STATUS_BIT)
-		input->put(*rx_reg);
+	while (isRXready() || isTXready(output->getCnt())) {
+		if (isRXready())
+			input->put(*rx_reg);
+		if (isTXready(output->getCnt()))
+			*tx_reg = output->get();
+	}
 }
 
 void Console::IOThreadBody(void *) {
-	Thread::yield();
 	write_sstatus(read_sstatus() & ~SSIE); // interrupt disable
 
 	while (true) {
