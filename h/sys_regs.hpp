@@ -22,6 +22,7 @@ void write_scause(uint64 scause);
 void write_stvec(uint64 stvec);
 
 static const uint64 SSIE = (1ULL << 1);
+static const uint64 SPIE = (1ULL << 5);
 static const uint64 SEIE = (1ULL << 9);
 static const uint64 SSIP = (1ULL << 1);
 static const uint64 SEIP = (1ULL << 9);

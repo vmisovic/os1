@@ -1,5 +1,6 @@
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
+#include "../h/sys_regs.hpp"
 
 namespace kernel {
 
@@ -71,6 +72,7 @@ void zaglavlje() {
 
 void *blkAlloc(size_t blocks) {
 	printString("ALOKACIJA\n", PRINT_MEMORY);
+	read_sie(); // baci gresku ako je u user modu neko pozvao
 	if ((size_t)free_blocks_count < blocks)
 		return nullptr;
 	blk_t count = (blk_t)blocks;
@@ -103,6 +105,7 @@ void tryMergeNext(blk_t index) {
 
 int blkFree(void *ptr) {
 	printString("FREE\n", PRINT_MEMORY);
+	read_sie(); // baci gresku ako je u user modu neko pozvao
 	if ((uint8*)ptr < BLOCKS_START || (uint8*)ptr >= BLOCKS_END || (size_t)ptr % MEM_BLOCK_SIZE != 0)
 		return -1;
 	blk_t index = (blk_t)((uint8*)ptr - BLOCKS_START) / MEM_BLOCK_SIZE;

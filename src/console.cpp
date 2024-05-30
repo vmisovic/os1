@@ -12,7 +12,10 @@ static uint8 *status_reg;
 static uint8 *tx_reg;
 static uint8 *rx_reg;
 
+static bool initalized = false;
+
 void Console::Init() {
+	if (initalized) return;
 	status_reg = (uint8*)CONSOLE_STATUS;
 	tx_reg = (uint8*)CONSOLE_TX_DATA;
 	rx_reg = (uint8*)CONSOLE_RX_DATA;
@@ -20,6 +23,7 @@ void Console::Init() {
 	input = new Buffer(CONSOLE_BUFFER_SIZE);
 	output = new Buffer(CONSOLE_BUFFER_SIZE);
 	Thread::create(IOThreadBody, nullptr, nullptr, Thread::Mode::SYSTEM);
+	initalized = true;
 }
 
 void Console::Destroy() {
@@ -31,7 +35,8 @@ void Console::Destroy() {
 }
 
 void Console::put(char c) {
-	output->put(c);
+	//output->put(c);
+	__putc(c);
 }
 
 char Console::get() {
@@ -44,11 +49,12 @@ bool isTXready(int buf_cnt) {
 }
 
 void Console::handler() {
-	while (isRXready() || isTXready(output->getCnt())) {
+	if (!initalized) return;
+	while (isRXready()) {//} || isTXready(output->getCnt())) {
 		if (isRXready())
 			input->put(*rx_reg);
-		if (isTXready(output->getCnt()))
-			*tx_reg = output->get();
+		//if (isTXready(output->getCnt()))
+		//	*tx_reg = output->get();
 	}
 }
 

@@ -5,6 +5,8 @@
 #include "../h/ecall_codes.h"
 #include "../h/print.hpp"
 
+extern kernel::Thread::Mode currentMode;
+
 namespace kernel {
 
 Thread *Thread::running = nullptr;
@@ -93,6 +95,8 @@ void Thread::start_wrapper() {
 }
 
 void Thread::set_priviledge(Mode m) {
+	currentMode = m;
+
 	uint64 sstatus = read_sstatus();
 	switch(m) {
 	case SYSTEM:
@@ -102,6 +106,7 @@ void Thread::set_priviledge(Mode m) {
 		sstatus &= ~SPP;
 		break;
 	}
+	sstatus |= SPIE;
 	write_sstatus(sstatus);
 
 	__asm__ __volatile__ (
@@ -137,6 +142,11 @@ void Thread::dispatch() {
 			Scheduler::put(oldRunning);
 	}
 	running = Scheduler::get();
+	if (running == nullptr) {
+		printString("running je null\n");
+		printString("KERNEL PANIC\n");
+		terminate();
+	}
 	running->timerCounter = 0;
 	running->sleepingTime = 0;
 

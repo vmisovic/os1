@@ -19,8 +19,11 @@ void interruptInit() {
 }
 
 void interruptEnable() {
-	printString("Interrupt Enable\n", PRINT_INFO);
 	write_sstatus(read_sstatus() | SSIE);
+}
+
+void interruptDisable() {
+	write_sstatus(read_sstatus() & ~SSIE);
 }
 
 void interruptHandler(volatile Registers *saved) {
@@ -46,7 +49,7 @@ void interruptHandler(volatile Registers *saved) {
 		case 9: // Spoljašnji hardverski prekid - KONZOLA
 			code = plic_claim();
 			if (code == CONSOLE_IRQ) { // stigao prekid od konzole 
-				//Console::handler();
+				Console::handler();
 			}
 			else { // prekid od drugih uredjaja
 				;;
@@ -75,7 +78,7 @@ void interruptHandler(volatile Registers *saved) {
 			break;
 		}
 	}
-	currentMode = (sstatus | SPP)? Thread::Mode::SYSTEM : Thread::Mode::USER;
+	currentMode = (sstatus & SPP)? Thread::Mode::SYSTEM : Thread::Mode::USER;
 	write_sepc(sepc);
 	write_sstatus(sstatus);
 	write_sip(read_sip() & ~SSIE);
@@ -136,7 +139,6 @@ void ecallHandler(volatile Registers *saved) {
 		printString("ecall sem signal\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->signal();
 		saved->a0 = 0;
-		Thread::dispatch();
 		break;
 	case SEM_TIMEDWAIT:
 		printString("ecall sem timedWait\n", PRINT_ECALL);
@@ -148,11 +150,9 @@ void ecallHandler(volatile Registers *saved) {
 		break;
 	case GETC:
 		saved->a0 = Console::get();
-		//saved->a0 = __getc();
 		break;
 	case PUTC:
 		Console::put((char)saved->a1);
-		//__putc((char)saved->a1);
 		break;
 	}
 }

@@ -24,13 +24,14 @@ int main() {
 	interruptInit();
 	printString("Creating user thread.\n", PRINT_INFO);
 	Thread *userT = Thread::create(userWrapper, nullptr, nullptr, Thread::Mode::USER);
-	interruptEnable();
 
 	printString("****************\n", PRINT_INFO);
 	printString("USER MAIN START:\n\n", PRINT_INFO);
+	interruptEnable();
 	while (!userT->isFinished()) {
 		Thread::yield();
 	}
+	interruptDisable();
 	Console::Destroy();
 	printString("\nUSER MAIN END.\n", PRINT_INFO);
 	printString("****************\n", PRINT_INFO);

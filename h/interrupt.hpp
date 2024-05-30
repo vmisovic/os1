@@ -12,6 +12,7 @@ extern void interruptWrapper();
 void interruptHandler(volatile Registers *saved);
 void ecallHandler(volatile Registers *saved);
 void interruptEnable();
+void interruptDisable();
 
 struct Registers {
 //x0 zero Hard-wired zero —

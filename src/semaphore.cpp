@@ -34,6 +34,7 @@ void Semaphore::wait() {
 		blocked.insert(Thread::running);
 		Thread::running->block();
 	}
+	Thread::dispatch();
 }
 
 void Semaphore::signal() {
@@ -42,6 +43,7 @@ void Semaphore::signal() {
 		Thread *t = blocked.remove();
 		if (t != nullptr) t->unblock();
 	}
+	Thread::dispatch();
 }
 
 int Semaphore::timedWait(time_t timeout) {
