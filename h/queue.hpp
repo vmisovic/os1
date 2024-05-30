@@ -18,6 +18,7 @@ public:
 
 	void insert(T *data);
 	T* remove();
+	T* remove(T *data);
 
 	void clear() { fron = rear = len; }
 	bool isEmpty() const { return (fron == len); }
@@ -53,7 +54,7 @@ void Queue<T>::insert(T *data) {
 
 template<typename T>
 T* Queue<T>::remove() {
-	if (fron == len)
+	if (isEmpty())
 		return nullptr;
 	T* ret = arr[fron];
 	if (fron == rear)
@@ -61,6 +62,29 @@ T* Queue<T>::remove() {
 	else
 		fron = (fron + 1) % len;
 	return ret;
+}
+
+
+template<typename T>
+T* Queue<T>::remove(T *data) {
+	if (isEmpty())
+		return nullptr;
+	size_t current = fron;
+	while (current != rear) {
+		if (arr[current] == data) {
+			// shift elements
+			size_t next = (current + 1) % len;
+			while (next != rear) {
+				arr[current] = arr[next];
+				current = next;
+				next = (next + 1) % len;
+			}
+			rear = (rear - 1 + len) % len;
+			return data;
+		}
+		current = (current + 1) % len;
+	}
+	return nullptr;
 }
 
 #endif
