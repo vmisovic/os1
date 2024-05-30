@@ -115,14 +115,22 @@ void Thread::set_priviledge(Mode m) {
 	);
 }
 
-void Thread::block() {
-	blocked = true;
+void Thread::block(Semaphore *owner, time_t timeout) {
+	waitingOn = owner;
+	sleepingTime = timeout;
+	if (timeout == 0)
+		blocked = true;
 	dispatch();
 }
 
 void Thread::unblock() {
+	waitingOn = nullptr;
 	blocked = false;
-	Scheduler::put(this);
+	if (sleepingTime > 0) // timedWait
+		Scheduler::wakeUp(this);
+	else // wait
+		Scheduler::put(this);
+	sleepingTime = 0;
 }
 
 void Thread::exit() {

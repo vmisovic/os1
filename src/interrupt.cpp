@@ -125,7 +125,6 @@ void ecallHandler(volatile Registers *saved) {
 		saved->a0 = (*(Semaphore**)saved->a1 != nullptr)? 0 : -1;
 		break;
 	case SEM_CLOSE:
-		// TODO return value
 		printString("ecall sem close\n", PRINT_ECALL);
 		delete (Semaphore*)saved->a1;
 		saved->a0 = 0;
@@ -133,7 +132,7 @@ void ecallHandler(volatile Registers *saved) {
 	case SEM_WAIT:
 		printString("ecall sem wait\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->wait();
-		saved->a0 = 0;
+		saved->a0 = Thread::running->ret_val;
 		break;
 	case SEM_SIGNAL:
 		printString("ecall sem signal\n", PRINT_ECALL);
@@ -142,7 +141,8 @@ void ecallHandler(volatile Registers *saved) {
 		break;
 	case SEM_TIMEDWAIT:
 		printString("ecall sem timedWait\n", PRINT_ECALL);
-		saved->a0 = ((Semaphore*)saved->a1)->timedWait((time_t)saved->a2);
+		((Semaphore*)saved->a1)->timedWait((time_t)saved->a2);
+		saved->a0 = Thread::running->ret_val;
 		break;
 	case SEM_TRYWAIT:
 		printString("ecall sem tryWait\n", PRINT_ECALL);

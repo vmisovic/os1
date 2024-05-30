@@ -6,11 +6,13 @@
 namespace kernel {
 
 struct Registers;
+class Semaphore;
 
 class Thread {
 public:
 	static void Init();
 	static void Destroy();
+	~Thread();
 
 	enum Mode { SYSTEM, USER };
 
@@ -23,6 +25,7 @@ public:
 		Mode m
 	);
 	bool isFinished() const { return finished; }
+	Semaphore *waitingOnSemaphoe() { return waitingOn; }
 
 	// ecall wrappers to use in SYSETM mode
 	static void compleated();
@@ -32,6 +35,8 @@ private:
 		uint64 ra;
 		uint64 sp;
 	};
+	uint64 ret_val = 0;
+	Semaphore *waitingOn = nullptr;
 
 	void (*run_routine)(void*);
 	void *args;
@@ -45,7 +50,6 @@ private:
 
 	Thread();
 	Thread(void (*run_routine)(void*), void *args, void* sp, Mode m);
-	~Thread();
 	static void start_wrapper();
 	static void set_priviledge(Mode m);
 	static void switchContext(Context *oldC, Context *newC);
@@ -53,7 +57,7 @@ private:
 	static void dispatch();
 	static void putToSleep(time_t timeout);
 
-	void block();
+	void block(Semaphore *owner, time_t timeout);
 	void unblock();
 
 	friend void interruptHandler(volatile Registers *saved);

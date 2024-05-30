@@ -1,5 +1,6 @@
 #include "../h/scheduler.hpp"
 #include "../h/print.hpp"
+#include "../h/thread.hpp"
 
 namespace kernel {
 
@@ -27,6 +28,7 @@ void Scheduler::Destroy() {
 	delete waiting;
 	while (sleepingHead) {
 		sleepNode *del = sleepingHead;
+		delete del->thread;
 		sleepingHead = sleepingHead->next;
 		delete del;
 	}
@@ -65,9 +67,41 @@ void Scheduler::tick() {
 		sleepingHead->relTime--;
 	while (sleepingHead && sleepingHead->relTime == 0) {
 		printString("budim\n", PRINT_SLEEPY);
-		Scheduler::put(sleepingHead->thread);
+		Thread *t = sleepingHead->thread;
+		Semaphore *waitingOn = t->waitingOnSemaphoe();
+		if (waitingOn != nullptr)
+			waitingOn->timedDeblock(t);
+		Scheduler::put(t);
 		sleepNode *del = sleepingHead;
 		sleepingHead = sleepingHead->next;
+		delete del;
+	}
+}
+
+void Scheduler::wakeUp(Thread *sleeping) {
+	printString("Removing sleepy:\n", PRINT_SLEEPY);
+	koSpava();
+	if (sleepingHead == nullptr) return;
+
+	if (sleepingHead->thread == sleeping) {
+		printString("budim\n", PRINT_SLEEPY);
+		sleepNode *del = sleepingHead;
+		Scheduler::put(del->thread);
+		sleepingHead = del->next;
+		delete del;
+		return;
+	}
+	sleepNode *cur = sleepingHead;
+	while (cur->next && cur->next->thread != sleeping)
+		cur = cur->next;
+
+	if (cur->next) {
+		printString("budim\n", PRINT_SLEEPY);
+		sleepNode *del = cur->next;
+		Scheduler::put(del->thread);
+		if (del->next)
+			del->next->relTime += del->relTime;
+		cur->next = del->next;
 		delete del;
 	}
 }

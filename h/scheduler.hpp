@@ -17,6 +17,7 @@ public:
 	static Thread* get();
 
 	static void putToSleep(Thread *sleepy, time_t t);
+	static void wakeUp(Thread *sleeping);
 	static void tick();
 private:
 	static Queue<Thread> *waiting;

@@ -44,14 +44,14 @@ public:
 	void terminate() { terminated = true; }
 protected:
 	PeriodicThread(time_t period) :
-		Thread(periodicWarapper, this),
+		Thread(periodicWrapper, this),
 		period(period) {}
 	virtual void periodicActivation() {}
 private:
 	time_t period;
 	bool terminated = false;
 
-	static void periodicWarapper(void *arg) {
+	static void periodicWrapper(void *arg) {
 		PeriodicThread *pt = (PeriodicThread*)arg;
 		while (!pt->terminated) {
 			pt->periodicActivation();

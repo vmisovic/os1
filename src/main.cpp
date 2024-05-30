@@ -9,10 +9,12 @@
 using namespace kernel;
 
 extern void userMain();
+extern "C" void myUserMain();
 
 void userWrapper(void *) {
 	//while (true)
 		userMain();
+	//myUserMain();
 }
 
 int main() {
