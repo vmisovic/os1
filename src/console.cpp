@@ -2,36 +2,24 @@
 #include "../lib/hw.h"
 #include "../h/thread.hpp"
 #include "../h/sys_regs.hpp"
+#include "../h/print.hpp"
 
 namespace kernel {
 
 Buffer *Console::input = nullptr;
-Buffer *Console::output = nullptr;
 
-static uint8 *status_reg;
-static uint8 *tx_reg;
-static uint8 *rx_reg;
-
-static bool initalized = false;
+bool Console::initalized = false;
 
 void Console::Init() {
 	if (initalized) return;
-	status_reg = (uint8*)CONSOLE_STATUS;
-	tx_reg = (uint8*)CONSOLE_TX_DATA;
-	rx_reg = (uint8*)CONSOLE_RX_DATA;
 
 	input = new Buffer(CONSOLE_BUFFER_SIZE);
-	output = new Buffer(CONSOLE_BUFFER_SIZE);
-	Thread::create(IOThreadBody, nullptr, nullptr, Thread::Mode::SYSTEM);
+
 	initalized = true;
 }
 
 void Console::Destroy() {
-	// empty output buffer
-	while (output->getCnt() > 0)
-		__putc(output->get());
 	delete input;
-	delete output;
 }
 
 void Console::put(char c) {
@@ -43,28 +31,12 @@ char Console::get() {
 	return input->get();
 }
 
-bool isRXready() { return *status_reg & CONSOLE_RX_STATUS_BIT; }
-bool isTXready(int buf_cnt) {
-	return (buf_cnt > 0) && (*status_reg & CONSOLE_TX_STATUS_BIT);
-}
-
 void Console::handler() {
 	if (!initalized) return;
-	while (isRXready()) {//} || isTXready(output->getCnt())) {
-		if (isRXready())
-			input->put(*rx_reg);
-		//if (isTXready(output->getCnt()))
-		//	*tx_reg = output->get();
-	}
-}
-
-void Console::IOThreadBody(void *) {
-	write_sstatus(read_sstatus() & ~SSIE); // interrupt disable
-
-	while (true) {
-		Console::handler();
-		Thread::yield();
-	}
+	uint8 *status_reg = (uint8*)CONSOLE_STATUS;
+	uint8 *rx_reg = (uint8*)CONSOLE_RX_DATA;
+	while (*status_reg & CONSOLE_RX_STATUS_BIT)
+		input->put(*rx_reg);
 }
 
 // busy wait uart

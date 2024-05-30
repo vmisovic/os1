@@ -18,9 +18,7 @@ public:
 
 private:
 	static Buffer *input;
-	static Buffer *output;
-
-	static void IOThreadBody(void *);
+	static bool initalized;
 };
 
 // busy wait uart
