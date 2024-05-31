@@ -55,6 +55,10 @@ void Semaphore::timedWait(time_t timeout) {
 		Thread::running->ret_val = (uint64)SEM_RET_OK;
 		return;
 	}
+	if (timeout == 0) {
+		Thread::running->ret_val = (uint64)SEM_RET_TIMEOUT;
+		return;
+	}
 	printString("Blokiranje trenutne niti.\n", PRINT_SEMAPHORE);
 	--val;
 	blocked.insert(Thread::running);

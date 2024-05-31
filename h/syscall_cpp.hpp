@@ -41,7 +41,7 @@ private:
 
 class PeriodicThread : public Thread {
 public:
-	void terminate() { terminated = true; }
+	void terminate() { period = (time_t)-1; }
 protected:
 	PeriodicThread(time_t period) :
 		Thread(periodicWrapper, this),
@@ -49,11 +49,10 @@ protected:
 	virtual void periodicActivation() {}
 private:
 	time_t period;
-	bool terminated = false;
 
 	static void periodicWrapper(void *arg) {
 		PeriodicThread *pt = (PeriodicThread*)arg;
-		while (!pt->terminated) {
+		while (pt->period != (time_t)-1) {
 			pt->periodicActivation();
 			time_sleep(pt->period);
 		}

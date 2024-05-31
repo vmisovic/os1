@@ -30,7 +30,9 @@ int main() {
 	printString("USER MAIN START:\n\n", PRINT_INFO);
 	interruptEnable();
 	while (!userT->isFinished()) {
+		interruptDisable();
 		Console::handle_output();
+		interruptEnable();
 		Thread::yield();
 	}
 	interruptDisable();
