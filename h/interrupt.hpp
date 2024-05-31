@@ -10,7 +10,8 @@ struct Registers;
 void interruptInit();
 extern void interruptWrapper();
 void interruptHandler(volatile Registers *saved);
-void ecallHandler(volatile Registers *saved, volatile int mode);
+void userEcallHandler(volatile Registers *saved);
+void systemEcallHandler(volatile Registers *saved);
 void interruptEnable();
 void interruptDisable();
 

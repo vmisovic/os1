@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 	typedef void* thread_t;
-	typedef void* sem_t;
+	typedef size_t sem_t;
 
 	void* mem_alloc(size_t size);
 	int mem_free(void*);

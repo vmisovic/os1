@@ -42,10 +42,10 @@ private:
 	void *args;
 	void *stack;
 	Context context;
-	bool finished = false;
-	bool blocked = false;
 	time_t timerCounter = 0;
 	time_t sleepingTime = 0;
+	bool finished = false;
+	bool blocked = false;
 	Mode mode;
 
 	Thread();
@@ -61,7 +61,8 @@ private:
 	void unblock();
 
 	friend void interruptHandler(volatile Registers *saved);
-	friend void ecallHandler(volatile Registers *saved, volatile int mode);
+	friend void userEcallHandler(volatile Registers *saved);
+	friend void systemEcallHandler(volatile Registers *saved);
 	friend class Semaphore;
 };
 

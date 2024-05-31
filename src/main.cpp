@@ -22,6 +22,7 @@ int main() {
 	Scheduler::Init();
 	Console::Init();
 	interruptInit();
+
 	printString("Creating user thread.\n", PRINT_INFO);
 	Thread *userT = Thread::create(userWrapper, nullptr, nullptr, Thread::Mode::USER);
 

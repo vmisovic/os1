@@ -7,14 +7,21 @@
 #include "../h/memory.hpp"
 #include "../h/print.hpp"
 #include "../h/console.hpp"
+#include "../h/hashmap.hpp"
 
 // used in new and delete operators
 kernel::Thread::Mode currentMode = kernel::Thread::Mode::SYSTEM;
 
 namespace kernel {
 
+typedef size_t sem_id;
+
+static HashMap<Semaphore> *userSemaphores = nullptr;
+static sem_id userSemaphoresCounter = 999;
+
 void interruptInit() {
 	printString("Init stvec\n", PRINT_INFO);
+	userSemaphores = new HashMap<Semaphore>();
 	write_stvec((uint64)interruptWrapper);
 }
 
@@ -33,7 +40,6 @@ void interruptHandler(volatile Registers *saved) {
 	volatile uint64 val = (uint64)(scause & 0xff);
 	volatile uint64 sepc = read_sepc();
 	volatile uint64 sstatus = read_sstatus();
-	volatile Thread::Mode prevMode = Thread::Mode::SYSTEM;
 
 	volatile int code;
 	if (bnt) {
@@ -73,9 +79,11 @@ void interruptHandler(volatile Registers *saved) {
 			Thread::exit();
 			break;
 		case 8:	// ecall iz korisničkog režima
-			prevMode = Thread::Mode::USER;
+			userEcallHandler(saved);
+			sepc += 4;
+			break;
 		case 9:	// ecall iz sistemskog režima
-			ecallHandler(saved, prevMode);
+			systemEcallHandler(saved);
 			sepc += 4;
 			break;
 		}
@@ -86,7 +94,8 @@ void interruptHandler(volatile Registers *saved) {
 	write_sip(read_sip() & ~SSIE);
 }
 
-void ecallHandler(volatile Registers *saved, volatile int prevMode) {
+void userEcallHandler(volatile Registers *saved) {
+	Semaphore *sem;
 	switch (saved->a0) {
 	case MEM_ALLOC:
 		printString("ecall alloc\n", PRINT_ECALL);
@@ -123,29 +132,40 @@ void ecallHandler(volatile Registers *saved, volatile int prevMode) {
 		break;
 	case SEM_OPEN:
 		printString("ecall sem open\n", PRINT_ECALL);
-		*(Semaphore**)saved->a1 = new Semaphore((unsigned)saved->a2);
-		saved->a0 = (*(Semaphore**)saved->a1 != nullptr)? 0 : -1;
+		userSemaphores->insert(++userSemaphoresCounter, Semaphore((unsigned)saved->a2));
+		*(sem_id*)saved->a1 = userSemaphoresCounter;
+		saved->a0 = 0;
 		break;
 	case SEM_CLOSE:
 		printString("ecall sem close\n", PRINT_ECALL);
-		delete (Semaphore*)saved->a1;
-		saved->a0 = 0;
+		saved->a0 = (userSemaphores->remove((sem_id)saved->a1))? 0 : SEM_RET_DEAD;
 		break;
 	case SEM_WAIT:
 		printString("ecall sem wait\n", PRINT_ECALL);
-		((Semaphore*)saved->a1)->wait();
+		sem = userSemaphores->get((sem_id)saved->a1);
+		if (sem != nullptr)
+			sem->wait();
+		else
+			Thread::running->ret_val = SEM_RET_DEAD;
 		saved->a0 = Thread::running->ret_val;
 		break;
 	case SEM_SIGNAL:
 		printString("ecall sem signal\n", PRINT_ECALL);
-		((Semaphore*)saved->a1)->signal();
-		saved->a0 = 0;
-		if (prevMode)
-			Thread::dispatch();
+		sem = userSemaphores->get((sem_id)saved->a1);
+		if (sem != nullptr) {
+			sem->signal();
+			saved->a0 = SEM_RET_OK;
+		} else
+			saved->a0 = SEM_RET_DEAD;
+		Thread::dispatch();
 		break;
 	case SEM_TIMEDWAIT:
 		printString("ecall sem timedWait\n", PRINT_ECALL);
-		((Semaphore*)saved->a1)->timedWait((time_t)saved->a2);
+		sem = userSemaphores->get((sem_id)saved->a1);
+		if (sem != nullptr)
+			sem->timedWait((time_t)saved->a2);
+		else
+			Thread::running->ret_val = SEM_RET_DEAD;
 		saved->a0 = Thread::running->ret_val;
 		break;
 	case SEM_TRYWAIT:
@@ -161,4 +181,30 @@ void ecallHandler(volatile Registers *saved, volatile int prevMode) {
 	}
 }
 
+void systemEcallHandler(volatile Registers *saved) {
+	switch (saved->a0) {
+	case THREAD_EXIT:
+		printString("system ecall thread compleated\n", PRINT_ECALL);
+		Thread::exit();
+		break;
+	case THREAD_DISPATCH:
+		printString("system ecall thread yield\n", PRINT_DISPATCH);
+		Thread::dispatch();
+		break;
+	case SEM_WAIT:
+		printString("system ecall sem aquire\n", PRINT_ECALL);
+		((Semaphore*)saved->a1)->wait();
+		saved->a0 = Thread::running->ret_val;
+		break;
+	case SEM_SIGNAL:
+		printString("system ecall sem release\n", PRINT_ECALL);
+		((Semaphore*)saved->a1)->signal();
+		break;
+	default:
+		printString("UNKNOWN SYSTEM ECALL CODE: ", PRINT_ERROR);
+		printHex(saved->a0, PRINT_ERROR);
+		printString("\n", PRINT_ERROR);
+		break;
+	}
+}
 }

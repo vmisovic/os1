@@ -20,7 +20,7 @@ public:
 	void timedDeblock(Thread *t);
 
 	// ecall wrappers to use in SYSETM mode
-	void aquire();
+	int aquire();
 	void release();
 protected:
 	void wait();
@@ -32,7 +32,8 @@ private:
 	Queue<Thread> blocked;
 
 	friend void interruptHandler(volatile Registers *saved);
-	friend void ecallHandler(volatile Registers *saved, volatile int mode);
+	friend void userEcallHandler(volatile Registers *saved);
+	friend void systemEcallHandler(volatile Registers *saved);
 };
 
 }
