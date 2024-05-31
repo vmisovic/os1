@@ -1,9 +1,6 @@
 #include "../h/memory.hpp"
 #include "../h/syscall_c.h"
 
-// new int[len] requires some symbols
-// CXXFLAGS += -fno-exceptions
-
 extern int currentMode;
 // 0 - SYSTEM mode
 // 1 - USER mode
@@ -26,3 +23,10 @@ void operator delete(void *ptr) noexcept {
 void operator delete[](void *ptr) noexcept {
 	freef[currentMode](ptr);
 }
+
+// new int[len] requires symbol __cxa_throw_bad_array_new_length
+// in Makefile add line: CXXFLAGS += -fno-exceptions
+#ifdef __EXCEPTIONS
+	// if -fno-exceptions flag is not set, define symbol:
+	extern "C" void __cxa_throw_bad_array_new_length() {}
+#endif
