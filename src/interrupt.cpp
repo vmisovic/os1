@@ -33,6 +33,7 @@ void interruptHandler(volatile Registers *saved) {
 	volatile uint64 val = (uint64)(scause & 0xff);
 	volatile uint64 sepc = read_sepc();
 	volatile uint64 sstatus = read_sstatus();
+	volatile Thread::Mode prevMode = Thread::Mode::SYSTEM;
 
 	volatile int code;
 	if (bnt) {
@@ -49,7 +50,7 @@ void interruptHandler(volatile Registers *saved) {
 		case 9: // Spoljašnji hardverski prekid - KONZOLA
 			code = plic_claim();
 			if (code == CONSOLE_IRQ) { // stigao prekid od konzole 
-				Console::handler();
+				Console::handle_input();
 			}
 			else { // prekid od drugih uredjaja
 				;;
@@ -72,8 +73,9 @@ void interruptHandler(volatile Registers *saved) {
 			Thread::exit();
 			break;
 		case 8:	// ecall iz korisničkog režima
+			prevMode = Thread::Mode::USER;
 		case 9:	// ecall iz sistemskog režima
-			ecallHandler(saved);
+			ecallHandler(saved, prevMode);
 			sepc += 4;
 			break;
 		}
@@ -84,7 +86,7 @@ void interruptHandler(volatile Registers *saved) {
 	write_sip(read_sip() & ~SSIE);
 }
 
-void ecallHandler(volatile Registers *saved) {
+void ecallHandler(volatile Registers *saved, volatile int prevMode) {
 	switch (saved->a0) {
 	case MEM_ALLOC:
 		printString("ecall alloc\n", PRINT_ECALL);
@@ -138,6 +140,8 @@ void ecallHandler(volatile Registers *saved) {
 		printString("ecall sem signal\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->signal();
 		saved->a0 = 0;
+		if (prevMode)
+			Thread::dispatch();
 		break;
 	case SEM_TIMEDWAIT:
 		printString("ecall sem timedWait\n", PRINT_ECALL);

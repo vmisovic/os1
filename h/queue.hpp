@@ -31,7 +31,7 @@ private:
 
 template<typename T>
 void Queue<T>::insert(T *data) {
-	if (rear == len)
+	if (isEmpty())
 		fron = rear = 0;
 	else {
 		rear = (rear + 1) % len;
@@ -72,14 +72,13 @@ T* Queue<T>::remove(T *data) {
 	size_t current = fron;
 	while (current != rear) {
 		if (arr[current] == data) {
-			// shift elements
 			size_t next = (current + 1) % len;
 			while (next != rear) {
 				arr[current] = arr[next];
 				current = next;
 				next = (next + 1) % len;
 			}
-			rear = (rear - 1 + len) % len;
+			rear = (rear + len - 1) % len;
 			return data;
 		}
 		current = (current + 1) % len;

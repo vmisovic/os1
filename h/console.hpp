@@ -14,10 +14,13 @@ public:
 
 	static void put(char c);
 	static char get();
-	static void handler();
+	static void handle_input();
+	static void handle_output();
 
 private:
 	static Buffer *input;
+	static Buffer *output;
+
 	static bool initalized;
 };
 

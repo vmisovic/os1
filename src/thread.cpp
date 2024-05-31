@@ -125,11 +125,11 @@ void Thread::block(Semaphore *owner, time_t timeout) {
 
 void Thread::unblock() {
 	waitingOn = nullptr;
-	blocked = false;
-	if (sleepingTime > 0) // timedWait
+	if (blocked == false) // timedWait
 		Scheduler::wakeUp(this);
 	else // wait
 		Scheduler::put(this);
+	blocked = false;
 	sleepingTime = 0;
 }
 

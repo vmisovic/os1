@@ -32,7 +32,7 @@ private:
 	Queue<Thread> blocked;
 
 	friend void interruptHandler(volatile Registers *saved);
-	friend void ecallHandler(volatile Registers *saved);
+	friend void ecallHandler(volatile Registers *saved, volatile int mode);
 };
 
 }

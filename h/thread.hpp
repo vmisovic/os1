@@ -61,7 +61,7 @@ private:
 	void unblock();
 
 	friend void interruptHandler(volatile Registers *saved);
-	friend void ecallHandler(volatile Registers *saved);
+	friend void ecallHandler(volatile Registers *saved, volatile int mode);
 	friend class Semaphore;
 };
 

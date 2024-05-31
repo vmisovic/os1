@@ -11,8 +11,10 @@ void Scheduler::koSpava() {
 	if (!PRINT_SLEEPY) return;
 	printString("Spavaju:\n");
 	for (sleepNode *cur = sleepingHead; cur; cur = cur->next) {
-		printString("\tt: ");
+		printString("\trelTime: ");
 		printInt(cur->relTime);
+		printString("\tthread: ");
+		printHex((uint64)cur->thread);
 		printString("\n");
 	}
 }
