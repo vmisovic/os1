@@ -22,6 +22,7 @@ public:
 
 	void clear() { fron = rear = len; }
 	bool isEmpty() const { return (fron == len); }
+
 private:
 	size_t len;
 	size_t fron;
@@ -69,6 +70,11 @@ template<typename T>
 T* Queue<T>::remove(T *data) {
 	if (isEmpty())
 		return nullptr;
+	if (fron == rear) {
+		if (arr[fron] == data)
+			return remove();
+		return nullptr;
+	}
 	size_t current = fron;
 	while (current != rear) {
 		if (arr[current] == data) {
@@ -78,6 +84,7 @@ T* Queue<T>::remove(T *data) {
 				current = next;
 				next = (next + 1) % len;
 			}
+			arr[current] = arr[rear];
 			rear = (rear + len - 1) % len;
 			return data;
 		}
