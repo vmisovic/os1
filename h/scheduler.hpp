@@ -19,6 +19,7 @@ public:
 	static void putToSleep(Thread *sleepy, time_t t);
 	static void wakeUp(Thread *sleeping);
 	static void tick();
+	static bool isEmpty() { return waiting->isEmpty() && !sleepingHead; }
 private:
 	static Queue<Thread> *waiting;
 

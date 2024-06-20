@@ -26,6 +26,7 @@ public:
 	);
 	bool isFinished() const { return finished; }
 	Semaphore *waitingOnSemaphoe() { return waitingOn; }
+	int getId() { return id; }
 
 	// ecall wrappers to use in SYSETM mode
 	static void compleated();
@@ -35,7 +36,7 @@ private:
 		uint64 ra;
 		uint64 sp;
 	};
-	uint64 ret_val = 0;
+	int ret_val = 0;
 	Semaphore *waitingOn = nullptr;
 
 	void (*run_routine)(void*);
@@ -47,6 +48,8 @@ private:
 	bool finished = false;
 	bool blocked = false;
 	Mode mode;
+	int id = 0;
+	static int userIdCounter;
 
 	Thread();
 	Thread(void (*run_routine)(void*), void *args, void* sp, Mode m);

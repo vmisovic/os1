@@ -89,6 +89,8 @@ void Scheduler::wakeUp(Thread *sleeping) {
 		printString("budim\n", PRINT_SLEEPY);
 		sleepNode *del = sleepingHead;
 		Scheduler::put(del->thread);
+		if (del->next)
+			del->next->relTime += del->relTime;
 		sleepingHead = del->next;
 		delete del;
 		return;

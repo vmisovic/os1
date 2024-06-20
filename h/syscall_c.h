@@ -20,6 +20,7 @@ extern "C" {
 	);
 	int thread_exit();
 	void thread_dispatch();
+	int getCurrentId();
  	 
 	int sem_open(sem_t *handle, unsigned init);
 	int sem_close(sem_t handle);

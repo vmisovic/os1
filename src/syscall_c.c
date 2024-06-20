@@ -79,6 +79,19 @@ void thread_dispatch() {
 	);
 }
 
+int getCurrentId() {
+	int ret = 0;
+	__asm__ __volatile__ (
+		".equ ECODE, %[ecode]\n"
+		"li a0, ECODE;"
+		"ecall;"
+		"mv %[ret], a0;"
+		: [ret]"=r"(ret)
+		: [ecode]"i"(THREAD_GETID)
+	);
+	return ret;
+}
+
 int sem_open(sem_t *handle, unsigned init) {
 	int ret = 0;
 	__asm__ __volatile__ (

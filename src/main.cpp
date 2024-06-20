@@ -9,10 +9,12 @@
 using namespace kernel;
 
 extern void userMain();
+extern void mod30();
 
 void userWrapper(void *) {
 	//while (true)
-		userMain();
+		//userMain();
+	mod30();
 }
 
 int main() {
@@ -29,7 +31,7 @@ int main() {
 	printString("****************\n", PRINT_INFO);
 	printString("USER MAIN START:\n\n", PRINT_INFO);
 	interruptEnable();
-	while (!userT->isFinished()) {
+	while (!userT->isFinished() || !Scheduler::isEmpty()) {
 		interruptDisable();
 		Console::handle_output();
 		interruptEnable();

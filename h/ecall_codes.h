@@ -7,6 +7,7 @@
 #define THREAD_CREATE 0x11
 #define THREAD_EXIT 0x12
 #define THREAD_DISPATCH 0x13
+#define THREAD_GETID 0x14
 
 #define SEM_OPEN 0x21
 #define SEM_CLOSE 0x22

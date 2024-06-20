@@ -10,6 +10,7 @@ extern kernel::Thread::Mode currentMode;
 namespace kernel {
 
 Thread *Thread::running = nullptr;
+int Thread::userIdCounter = 10;
 
 void Thread::Init() {
 	running = new Thread();
@@ -45,6 +46,8 @@ Thread::Thread(void (*run_routine)(void*), void *args, void* sp, Mode mode) :
 	printString("\nMode (0-SYSTEM, 1-USER): ", PRINT_THREAD);
 	printInt(mode, PRINT_THREAD);
 	printString("\n", PRINT_THREAD);
+
+	id = (mode == USER)? userIdCounter++ : 0;
 
 	Scheduler::put(this);
 }

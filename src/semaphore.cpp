@@ -43,8 +43,8 @@ void Semaphore::signal() {
 	if (++val <= 0) {
 		Thread *t = blocked.remove();
 		if (t != nullptr) {
-			printString("Deblokiranje niti iz reda blocked.\n", PRINT_SEMAPHORE);
-			t->ret_val = (uint64)SEM_RET_OK;
+			printString("Deblokiranje: SEM SIGNAL\n", PRINT_SEMAPHORE);
+			t->ret_val = SEM_RET_OK;
 			t->unblock();
 		}
 	}
@@ -52,11 +52,11 @@ void Semaphore::signal() {
 
 void Semaphore::timedWait(time_t timeout) {
 	if (tryWait() == SEM_RET_OK) {
-		Thread::running->ret_val = (uint64)SEM_RET_OK;
+		Thread::running->ret_val = SEM_RET_OK;
 		return;
 	}
 	if (timeout == 0) {
-		Thread::running->ret_val = (uint64)SEM_RET_TIMEOUT;
+		Thread::running->ret_val = SEM_RET_TIMEOUT;
 		return;
 	}
 	printString("Blokiranje trenutne niti.\n", PRINT_SEMAPHORE);
@@ -73,10 +73,11 @@ int Semaphore::tryWait() {
 }
 
 void Semaphore::timedDeblock(Thread *t) {
-	if (blocked.remove(t)) {
-		printString("Deblokiranje: TIMEOUT\n", PRINT_SEMAPHORE);
+	if(blocked.remove(t) != nullptr) {
+		printString("Deblokiranje: SEM TIMEOUT\n", PRINT_SEMAPHORE);
 		++val;
 		t->ret_val = SEM_RET_TIMEOUT;
+		t->waitingOn = nullptr;
 	}
 }
 
@@ -84,7 +85,7 @@ Semaphore::~Semaphore() {
 	Thread *t = blocked.remove();
 	while (t != nullptr) {
 		printString("Deblokiranje: SEM DEAD\n", PRINT_SEMAPHORE);
-		t->ret_val = (uint64)SEM_RET_DEAD;
+		t->ret_val = SEM_RET_DEAD;
 		t->unblock();
 		t = blocked.remove();
 	}

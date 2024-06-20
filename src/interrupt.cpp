@@ -125,6 +125,11 @@ void userEcallHandler(volatile Registers *saved) {
 		Thread::dispatch();
 		saved->a0 = 0;
 		break;
+	case THREAD_GETID:
+		printString("ecall thread getID\n", PRINT_ECALL);
+		saved->a0 = Thread::running->getId();
+		Thread::dispatch();
+		break;
 	case TIME_SLEEP:
 		printString("ecall time sleep\n", PRINT_ECALL);
 		Thread::putToSleep((time_t)saved->a1);
@@ -147,7 +152,7 @@ void userEcallHandler(volatile Registers *saved) {
 			sem->wait();
 		else
 			Thread::running->ret_val = SEM_RET_DEAD;
-		saved->a0 = Thread::running->ret_val;
+		saved->a0 = (uint64)Thread::running->ret_val;
 		break;
 	case SEM_SIGNAL:
 		printString("ecall sem signal\n", PRINT_ECALL);
@@ -166,7 +171,7 @@ void userEcallHandler(volatile Registers *saved) {
 			sem->timedWait((time_t)saved->a2);
 		else
 			Thread::running->ret_val = SEM_RET_DEAD;
-		saved->a0 = Thread::running->ret_val;
+		saved->a0 = (uint64)Thread::running->ret_val;
 		break;
 	case SEM_TRYWAIT:
 		printString("ecall sem tryWait\n", PRINT_ECALL);
@@ -194,7 +199,7 @@ void systemEcallHandler(volatile Registers *saved) {
 	case SEM_WAIT:
 		printString("system ecall sem aquire\n", PRINT_ECALL);
 		((Semaphore*)saved->a1)->wait();
-		saved->a0 = Thread::running->ret_val;
+		saved->a0 = (uint64)Thread::running->ret_val;
 		break;
 	case SEM_SIGNAL:
 		printString("system ecall sem release\n", PRINT_ECALL);
